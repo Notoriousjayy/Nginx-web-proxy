@@ -1,0 +1,23 @@
+# Local Terraform directories
+**/.terraform/
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+
+# Override files (local overrides)
+override.tf
+override.tf.json
+
+# Private key PEM files
+*.pem
+
+# Sensitive variable files (but keep the example!)
+*.tfvars
+!terraform.tfvars.example
+
+# Allow PDF files
+!*.pdf
