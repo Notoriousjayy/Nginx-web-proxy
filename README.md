@@ -2,16 +2,23 @@
 
 ## Structure
 
-- **modules/**: reusable building blocks (VPC, EC2, RDS, S3, IAM)
+- **modules/**: reusable building blocks (VPC, EC2, DNS, Nginx)
 - **environments/**: per-env configs (dev, staging, prod)
-- **global/**: org-wide infra (IAM org roles, SCPs)
-- **shared/**: infra shared across environments (VPC peering, etc.)
 - **terraform.tfvars.example**: sample variable values
+
+## Prerequisites
+
+- Terraform v1.3 or newer
+- AWS credentials configured (e.g. via `~/.aws/credentials`)
+- An SSH key pair created out-of-band and imported into AWS
 
 ## Getting Started
 
 ```bash
-cd terraform/environments/dev
+cd environments/dev
 cp terraform.tfvars.example terraform.tfvars    # fill in your values
 terraform init
+terraform fmt
+terraform validate
+terraform plan
 terraform apply

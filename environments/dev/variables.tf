@@ -1,8 +1,11 @@
-# environments/dev/variables.tf
-
 variable "aws_region" {
   type        = string
   description = "AWS region"
+}
+
+variable "availability_zones" {
+  type        = list(string)
+  description = "Availability zones for your subnets"
 }
 
 variable "vpc_cidr" {
@@ -15,11 +18,6 @@ variable "public_subnets" {
   description = "Public subnet CIDRs"
 }
 
-variable "availability_zones" {
-  type        = list(string)
-  description = "Availability zones for your subnets"
-}
-
 variable "instance_type" {
   type        = string
   description = "EC2 instance type"
@@ -27,7 +25,13 @@ variable "instance_type" {
 
 variable "key_name" {
   type        = string
-  description = "Name of the SSH key pair"
+  description = "Name of the existing AWS key pair"
+}
+
+variable "ssh_ingress_cidr" {
+  type        = string
+  description = "CIDR block allowed to SSH in (e.g. your office IP/32)"
+  default     = "0.0.0.0/0"
 }
 
 variable "environment" {
