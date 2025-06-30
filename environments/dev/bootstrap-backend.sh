@@ -1,55 +1,80 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${BOOTSTRAP_BUCKET_NAME:=""}"
+: "${BOOTSTRAP_BUCKET_NAME:=}"            # optional override
+
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 BOOTSTRAP_DIR="${REPO_ROOT}/bootstrap"
 ENV="dev"
 KEY="${ENV}/terraform.tfstate"
 
-# Make Terraform pick up our vars automatically
 export TF_VAR_environment="bootstrap"
 export TF_VAR_aws_region="us-east-1"
 
-# 1) Read existing bootstrap outputs (if any)
+#######################################
+# Helpers
+#######################################
+
+# Return a value only if it looks like a legal S3 bucket name
 read_output() {
-  terraform -chdir="$BOOTSTRAP_DIR" output -raw "$1" 2>/dev/null || true
+  local val
+  val="$(terraform -chdir="$BOOTSTRAP_DIR" output -raw "$1" 2>/dev/null || true)"
+  # strip whitespace
+  val="$(echo "$val" | tr -d '[:space:]')"
+  [[ "$val" =~ ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$ ]] && echo "$val" || echo ""
 }
+
+# True ↦ bucket string is syntactically valid **and** actually exists
+bucket_exists() {
+  local bucket="$1"
+  [[ -z "$bucket" ]] && return 1
+  aws s3api head-bucket --bucket "$bucket" >/dev/null 2>&1
+}
+
+#######################################
+# 1 ▷ Try to reuse an existing bucket
+#######################################
 
 BUCKET_NAME="$(read_output bucket_name)"
 BUCKET_REGION="$(read_output bucket_region)"
 
-# 2) If we didn't get a real bucket_name, create the bucket now
-if [[ -z "$BUCKET_NAME" ]]; then
-  echo "⚙️  Bootstrapping S3 bucket..."
+if ! bucket_exists "$BUCKET_NAME"; then
+  BUCKET_NAME=""
+  BUCKET_REGION=""
+fi
 
-  # Initialize the bootstrap module
+#######################################
+# 2 ▷ Create a bucket if none usable
+#######################################
+
+if [[ -z "$BUCKET_NAME" ]]; then
+  echo "⚙️  Bootstrapping S3 bucket …"
+
   terraform -chdir="$BOOTSTRAP_DIR" init -input=false
 
-  # Pick a random name if none was provided
   if [[ -z "$BOOTSTRAP_BUCKET_NAME" ]]; then
-    RANDHEX="$(openssl rand -hex 4)"
-    export TF_VAR_name="tf-state-${RANDHEX}"
-    echo "🔑 Generated bootstrap bucket name: ${TF_VAR_name}"
+    TF_VAR_name="tf-state-$(openssl rand -hex 4)"
   else
-    export TF_VAR_name="$BOOTSTRAP_BUCKET_NAME"
+    TF_VAR_name="$BOOTSTRAP_BUCKET_NAME"
   fi
+  export TF_VAR_name
+  echo "🔑 Using bucket name: $TF_VAR_name"
 
-  # Apply to create the S3 bucket
   terraform -chdir="$BOOTSTRAP_DIR" apply -auto-approve
 
-  # Re-read the newly created outputs
   BUCKET_NAME="$(terraform -chdir="$BOOTSTRAP_DIR" output -raw bucket_name)"
   BUCKET_REGION="$(terraform -chdir="$BOOTSTRAP_DIR" output -raw bucket_region)"
 fi
 
-# 3) Fail if still missing
+#######################################
+# 3 ▷ Validate and write backend files
+#######################################
+
 if [[ -z "$BUCKET_NAME" || -z "$BUCKET_REGION" ]]; then
-  echo "❌  Unable to create or read the bootstrap bucket." >&2
+  echo "❌  Unable to determine a valid bootstrap bucket." >&2
   exit 1
 fi
 
-# 4) Write the dev environment backend configuration
 cat > backend.hcl <<EOF
 bucket  = "${BUCKET_NAME}"
 region  = "${BUCKET_REGION}"
@@ -58,7 +83,6 @@ encrypt = true
 EOF
 echo "✅ Wrote backend.hcl → $(pwd)/backend.hcl"
 
-# 5) Write terraform.auto.tfvars so apply is non-interactive
 cat > terraform.auto.tfvars <<EOF
 bootstrap_bucket = "${BUCKET_NAME}"
 EOF
