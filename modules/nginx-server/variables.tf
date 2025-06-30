@@ -1,3 +1,5 @@
+# modules/nginx-server/variables.tf
+
 variable "vpc_id" {
   description = "VPC ID to launch Nginx into"
   type        = string
@@ -52,4 +54,9 @@ variable "assets_s3_prefix" {
 variable "security_group_ids" {
   description = "List of Security Group IDs to attach to the Nginx EC2 instance"
   type        = list(string)
+}
+
+variable "instance_profile" {
+  description = "Name of the IAM instance profile to attach"
+  type        = string
 }

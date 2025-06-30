@@ -32,7 +32,7 @@ npm run build
 ```bash
 BUCKET=$(terraform -chdir=../environments/dev output -raw assets_bucket_name)
 aws s3 sync dist/ s3://$BUCKET/ --delete --acl bucket-owner-full-control
-````
+```
 
 ## Installation
 
@@ -54,7 +54,7 @@ terraform init
 
 ## Deployment
 
-To deploy the full stack (infrastructure + UI) in one command, you can use the provided GitHub Actions workflow:
+To deploy the full stack (infrastructure + UI) in one command, use the provided GitHub Actions workflow:
 
 ```bash
 # Push to main → triggers .github/workflows/deploy.yml
@@ -66,7 +66,7 @@ Or run manually:
 ```bash
 # Deploy infra
 cd environments/dev
-terraform apply
+terraform apply --auto-approve
 
 # Deploy UI
 cd ../../app
@@ -133,7 +133,7 @@ terraform -chdir=environments/dev output
 terraform -chdir=environments/dev output nginx_eip
 ```
 
-You can also export all outputs as JSON:
+Export all outputs as JSON:
 
 ```bash
 terraform -chdir=environments/dev output -json > outputs.json
