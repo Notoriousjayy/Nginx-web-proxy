@@ -6,8 +6,7 @@ module.exports = (env, argv) => ({
   entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.[contenthash].js',
-    clean: true,
+    publicPath: '/'
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
@@ -23,7 +22,7 @@ module.exports = (env, argv) => ({
       {
         test: /\.js$/,
         enforce: 'pre',
-        use: ['source-map-loader'],
+        use: ['source-map-loader'],output: {
       },
       // Optional: CSS support
       // {
