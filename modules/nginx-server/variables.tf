@@ -19,7 +19,7 @@ variable "key_name" {
 }
 
 variable "ssh_ingress_cidr" {
-  description = "CIDR block allowed to SSH in"
+  description = "CIDR block allowed to SSH in (only used if you still provision an SSH SG here)"
   type        = string
 }
 
@@ -37,4 +37,19 @@ variable "tags" {
   description = "Additional tags to apply"
   type        = map(string)
   default     = {}
+}
+
+variable "assets_s3_bucket" {
+  description = "S3 bucket containing your webpack build artifacts"
+  type        = string
+}
+
+variable "assets_s3_prefix" {
+  description = "S3 prefix (folder) under which your build artifacts are stored"
+  type        = string
+}
+
+variable "security_group_ids" {
+  description = "List of Security Group IDs to attach to the Nginx EC2 instance"
+  type        = list(string)
 }

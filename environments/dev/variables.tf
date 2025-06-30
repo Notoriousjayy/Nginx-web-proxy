@@ -39,3 +39,27 @@ variable "environment" {
   description = "Deployment environment"
   default     = "dev"
 }
+
+variable "zone_name" {
+  type        = string
+  description = "DNS zone name (only needed if you use Route53 or other DNS integrations)"
+}
+
+variable "bootstrap_bucket" {
+  description = "Name of the S3 bucket that stores the bootstrap state"
+  type        = string
+}
+
+variable "bootstrap_bucket_region" {
+  description = "Region where the bootstrap state bucket lives"
+  type        = string
+}
+
+variable "tags" {
+  description = "Common tags to apply to all dev resources"
+  type        = map(string)
+  default     = {
+    Environment = "dev"
+    ManagedBy   = "terraform"
+  }
+}
