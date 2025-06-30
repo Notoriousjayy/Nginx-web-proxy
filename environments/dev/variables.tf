@@ -39,8 +39,3 @@ variable "environment" {
   description = "Deployment environment"
   default     = "dev"
 }
-
-variable "zone_name" {
-  type        = string
-  description = "DNS zone to serve (e.g. example.com)"
-}
