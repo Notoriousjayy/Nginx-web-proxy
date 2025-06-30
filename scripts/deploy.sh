@@ -60,23 +60,23 @@ if [[ -n "${CLOUDFRONT_DIST_ID:-}" ]]; then
 fi
 
 # ────────────────────────────────────────────────────────────
-# 6) Determine SSH target and credentials
+# 6) Fetch the Terraform-generated private key
+# ────────────────────────────────────────────────────────────
+echo "🔑 Fetching SSH private key from Terraform output…"
+KEY_PATH="$(mktemp)"
+terraform -chdir="$REPO_ROOT/environments/dev" output -raw private_key_pem > "$KEY_PATH"
+chmod 600 "$KEY_PATH"
+
+# ────────────────────────────────────────────────────────────
+# 7) Determine SSH target and credentials
 # ────────────────────────────────────────────────────────────
 SSH_TARGET="$EIP"
-# only try PIP if we can actually open a TCP connection to it:
 if nc -z -w2 "$PIP" 22 &>/dev/null; then
   SSH_TARGET="$PIP"
 fi
 echo "🔐 Will SSH to $SSH_TARGET"
 
-KEY_PATH="$REPO_ROOT/environments/dev/id_rsa_nginx"
-if [[ ! -f "$KEY_PATH" ]]; then
-  echo "❌ Private key not found at $KEY_PATH" >&2
-  exit 1
-fi
-chmod 600 "$KEY_PATH"
-
-# Try a list of common users until one works
+SSH_USER=""
 for USER in admin ubuntu ec2-user; do
   echo "  • Testing SSH user '$USER'…"
   if ssh -q -o BatchMode=yes -o StrictHostKeyChecking=no \
@@ -86,25 +86,24 @@ for USER in admin ubuntu ec2-user; do
   fi
 done
 
-if [[ -z "${SSH_USER:-}" ]]; then
+if [[ -z "$SSH_USER" ]]; then
   echo "❌ Unable to SSH as admin, ubuntu or ec2-user. Check your key and SG." >&2
   exit 1
 fi
-
 echo "   → using SSH user '$SSH_USER'"
 
 # ────────────────────────────────────────────────────────────
-# 7) Remote sync & nginx restart
+# 8) Remote sync & nginx restart (with sudo)
 # ────────────────────────────────────────────────────────────
-ssh -o StrictHostKeyChecking=no -i "$KEY_PATH" "$SSH_USER@$SSH_TARGET" bash -s <<'EOF'
+ssh -o StrictHostKeyChecking=no -i "$KEY_PATH" "$SSH_USER@$SSH_TARGET" bash -s <<EOF
 set -euo pipefail
 echo "  • pulling from S3"
-aws s3 sync s3://'"$BUCKET"'/ /var/www/html/
+sudo aws s3 sync s3://$BUCKET/ /var/www/html/
 echo "  • fixing perms"
-chown -R www-data:www-data /var/www/html
-chmod -R o+r /var/www/html
+sudo chown -R www-data:www-data /var/www/html
+sudo chmod -R o+r /var/www/html
 echo "  • restarting nginx"
-systemctl restart nginx
+sudo systemctl restart nginx
 EOF
 
 echo "✅ Deployment complete!"
