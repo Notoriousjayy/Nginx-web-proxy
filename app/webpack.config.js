@@ -22,7 +22,7 @@ module.exports = (env, argv) => ({
       {
         test: /\.js$/,
         enforce: 'pre',
-        use: ['source-map-loader'],output: {
+        use: ['source-map-loader'],
       },
       // Optional: CSS support
       // {

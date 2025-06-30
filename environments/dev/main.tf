@@ -7,7 +7,7 @@ provider "aws" {
 }
 
 # ────────────────────────────────────────────────────────────
-# Pull in the bootstrap state‐bucket outputs (local state file)
+# Pull in the bootstrap-bucket outputs (local state file)
 # ────────────────────────────────────────────────────────────
 data "terraform_remote_state" "bootstrap" {
   backend = "local"
@@ -16,9 +16,8 @@ data "terraform_remote_state" "bootstrap" {
   }
 }
 
-
 # ────────────────────────────────────────────────────────────
-# Generate & upload SSH key (Terraform-managed)
+# Generate an SSH key pair (Terraform-managed)
 # ────────────────────────────────────────────────────────────
 resource "tls_private_key" "ssh" {
   algorithm = "RSA"
@@ -31,14 +30,14 @@ resource "aws_key_pair" "debian" {
 }
 
 # ────────────────────────────────────────────────────────────
-# Dynamically derive AZs to match public_subnets length
+# Availability Zones → match public_subnets length
 # ────────────────────────────────────────────────────────────
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
 # ────────────────────────────────────────────────────────────
-# VPC
+# VPC + public subnets
 # ────────────────────────────────────────────────────────────
 module "vpc" {
   source             = "../../modules/vpc"
@@ -52,12 +51,11 @@ module "vpc" {
 }
 
 locals {
-  dns_slave_roles = ["slave1", "slave2"]
-  instance_name   = "nginx-proxy"
+  instance_name = "nginx-proxy"
 }
 
 # ────────────────────────────────────────────────────────────
-# Assets bucket for webpack build artifacts
+# S3 bucket for webpack build artefacts
 # ────────────────────────────────────────────────────────────
 resource "random_pet" "assets_bucket" {
   length    = 2
@@ -76,33 +74,23 @@ resource "aws_s3_bucket" "assets" {
 
 resource "aws_s3_bucket_ownership_controls" "assets" {
   bucket = aws_s3_bucket.assets.id
-
-  rule {
-    object_ownership = "BucketOwnerEnforced"
-  }
+  rule { object_ownership = "BucketOwnerEnforced" }
 }
 
 resource "aws_s3_bucket_versioning" "assets" {
   bucket = aws_s3_bucket.assets.id
-
-  versioning_configuration {
-    status = "Enabled"
-  }
+  versioning_configuration { status = "Enabled" }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "assets" {
   bucket = aws_s3_bucket.assets.id
-
   rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
+    apply_server_side_encryption_by_default { sse_algorithm = "AES256" }
   }
 }
 
 resource "aws_s3_bucket_public_access_block" "assets" {
-  bucket = aws_s3_bucket.assets.id
-
+  bucket                  = aws_s3_bucket.assets.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -110,7 +98,7 @@ resource "aws_s3_bucket_public_access_block" "assets" {
 }
 
 # ────────────────────────────────────────────────────────────
-# Security Group for Nginx proxy
+# Security-group allowing SSH/HTTP/HTTPS
 # ────────────────────────────────────────────────────────────
 resource "aws_security_group" "nginx_proxy" {
   name        = "${var.environment}-${local.instance_name}-sg"
@@ -150,33 +138,83 @@ resource "aws_security_group" "nginx_proxy" {
 
   tags = merge(
     { Name = "${var.environment}-${local.instance_name}-sg" },
-    var.tags,
+    var.tags
   )
 }
 
 # ────────────────────────────────────────────────────────────
-# Nginx Web Proxy
+# IAM role + instance-profile for S3 read access
+# ────────────────────────────────────────────────────────────
+resource "aws_iam_role" "nginx" {
+  name = "${var.environment}-${local.instance_name}-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "nginx_s3_read" {
+  name = "${var.environment}-${local.instance_name}-s3-read"
+  role = aws_iam_role.nginx.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = ["s3:GetObject", "s3:ListBucket"]
+      Resource = [
+        aws_s3_bucket.assets.arn,
+        "${aws_s3_bucket.assets.arn}/*"
+      ]
+    }]
+  })
+}
+
+resource "aws_iam_instance_profile" "nginx" {
+  name = "${var.environment}-${local.instance_name}-profile"
+  role = aws_iam_role.nginx.name
+}
+
+# ────────────────────────────────────────────────────────────
+# Nginx EC2 module
 # ────────────────────────────────────────────────────────────
 module "nginx" {
   source            = "../../modules/nginx-server"
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
 
-  instance_type     = var.instance_type
-  key_name          = aws_key_pair.debian.key_name
-  ssh_ingress_cidr  = var.ssh_ingress_cidr
-  environment       = var.environment
-  instance_name     = local.instance_name
-  tags              = var.tags
+  # ── Key-pair and SSH ingress ─────────────────────────────
+  key_name         = aws_key_pair.debian.key_name
+  ssh_ingress_cidr = var.ssh_ingress_cidr
 
-  assets_s3_bucket  = aws_s3_bucket.assets.bucket
-  assets_s3_prefix  = ""
+  # ── Instance sizing & tagging ───────────────────────────
+  instance_type = var.instance_type
+  environment   = var.environment
+  instance_name = local.instance_name
+  tags          = var.tags
 
+  # ── S3 assets for Nginx to pull ─────────────────────────
+  assets_s3_bucket = aws_s3_bucket.assets.bucket
+  assets_s3_prefix = ""
+
+  # ── Networking & security ───────────────────────────────
   security_group_ids = [aws_security_group.nginx_proxy.id]
+
+  # ── IAM profile for S3 read ─────────────────────────────
+  instance_profile = aws_iam_instance_profile.nginx.name
+
+  # ── ENSURE THE ABOVE RESOURCES EXIST FIRST ──────────────
+  depends_on = [
+    aws_key_pair.debian,
+    aws_iam_instance_profile.nginx
+  ]
 }
 
 # ────────────────────────────────────────────────────────────
-# (Optional) Manage a second S3 bucket via module
+# (Optional) additional S3 bucket via reusable module
 # ────────────────────────────────────────────────────────────
 module "assets_bucket" {
   source      = "../../modules/s3-bucket"

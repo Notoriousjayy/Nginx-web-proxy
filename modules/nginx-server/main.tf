@@ -1,3 +1,5 @@
+# modules/nginx-server/main.tf
+
 # Render your custom nginx.conf
 data "template_file" "nginx_conf" {
   template = file("${path.module}/templates/nginx.conf.tpl")
@@ -21,6 +23,9 @@ module "vm" {
   environment              = var.environment
   instance_name            = var.instance_name
   tags                     = var.tags
+
+  # IAM instance profile for S3 access
+  instance_profile         = var.instance_profile
 
   user_data = base64encode(join("\n", [
     "#!/bin/bash",
