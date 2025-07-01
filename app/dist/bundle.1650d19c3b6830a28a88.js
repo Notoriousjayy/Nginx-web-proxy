@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[132],{132:(e,s,n)=>{n.r(s),n.d(s,{default:()=>l});var a=n(848);const l=()=>(0,a.jsxs)("div",{className:"p-4",children:[(0,a.jsx)("h1",{className:"text-2xl mb-4",children:"🔒 Private Area"}),(0,a.jsx)("p",{children:"Only logged-in users can see this."})]})}}]);
+//# sourceMappingURL=bundle.1650d19c3b6830a28a88.js.map

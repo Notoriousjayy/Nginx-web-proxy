@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[941],{941:(r,e,n)=>{n.r(e),n.d(e,{ProductPage:()=>t});var s=n(848),c=n(788);const t=()=>{const{slug:r}=(0,c.g)();return(0,s.jsxs)("div",{children:["Product detail for ",(0,s.jsx)("strong",{children:r})]})}}}]);
+//# sourceMappingURL=bundle.68c569cecf733955a4a4.js.map

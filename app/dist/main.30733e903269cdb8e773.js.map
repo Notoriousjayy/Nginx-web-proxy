@@ -1,1 +1,0 @@
-{"version":3,"file":"main.30733e903269cdb8e773.js","mappings":"4JAEO,MAAMA,EAAqB,KAAM,uD","sources":["webpack://nginx-web-proxy/./src/pages/Cart/CartPage.tsx"],"sourcesContent":["// src/pages/Cart/CartPage.tsx\r\nimport React from 'react';\r\nexport const CartPage: React.FC = () => <div>Your cart contents go here</div>;"],"names":["CartPage"],"sourceRoot":""}

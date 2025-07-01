@@ -1,47 +1,144 @@
+// src/pages/StyleGuide/StyleGuide.tsx
 import React from 'react';
-import { styleGuideStyles } from './StyleGuideStyles';
 
-// import your components
+// Layout
+import { Flex } from '../../components/Flex';
+import { Grid } from '../../components/Grid';
+
+// Inputs & Controls
+import { Accordion } from '../../components/Accordion';
+import { Alert } from '../../components/Alert';
+import { Avatar } from '../../components/Avatar';
+import { AvatarGroup } from '../../components/AvatarGroup';
+import { Badge } from '../../components/Badge';
+import Banner from '../../components/Banner';
 import { Button } from '../../components/Button';
 import IconButton from '../../components/IconButton';
+import { Checkbox } from '../../components/Checkbox';
+import { Radio } from '../../components/Radio';
+import { Switch } from '../../components/Switch';
+import { Slider } from '../../components/Slider';
 import SizePicker from '../../components/SizePicker';
+import { Input } from '../../components/Input';
+import { Dropdown } from '../../components/Dropdown';
+import Menu from '../../components/Menu';
+import { Modal } from '../../components/Modal';
+import { Toast } from '../../components/Toast';
 
-// …import the other 29 stubs here…
+// Data display
+import { Table } from '../../components/Table';
+import { TableRow } from '../../components/TableRow';
+import { TableCell } from '../../components/TableCell';
+import { List } from '../../components/List';
+import ListItem from '../../components/ListItem';
+import { Divider } from '../../components/Divider';
+import { ProgressBar } from '../../components/ProgressBar';
+import { Tag } from '../../components/Tag';
+
+// Media & Icons
+import Icon from '../../components/Icon';
+import { Tooltip } from '../../components/Tooltip';
+import ProductCard from '../../components/ProductCard';
+import BlogCard from '../../components/BlogCard';
+
+// sample data
+import { products } from '../../data/products';
+import { blogPosts } from '../../data/blogPosts';
 
 export default function StyleGuide() {
+  const sampleProduct = { ...products[0], slug: products[0].id.toString() };
+  const samplePost = blogPosts[0];
+
   return (
-    <main style={styleGuideStyles}>
-      {/* BUTTON */}
+    <div className="p-8 space-y-12">
+      <h1 className="text-3xl font-bold">Component Style Guide</h1>
+
+      {/* Banner */}
       <section>
-        <h2 className="text-xl font-semibold mb-2">Button</h2>
-        <div className="space-x-2">
-          <Button variant="primary">Primary</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="danger">Danger</Button>
+        <h2 className="text-2xl mb-4">Banner</h2>
+        <Banner />
+      </section>
+
+      {/* Inputs & Controls */}
+      <section>
+        <h2 className="text-2xl mb-4">Inputs & Controls</h2>
+        <div className="flex flex-wrap gap-4">
+
+          <Accordion
+            items={[
+              { title: 'Section 1', content: <div>Content 1</div> },
+              { title: 'Section 2', content: <div>Content 2</div> },
+            ]}
+          />
+
+          <Alert variant="info">
+            This is an info alert
+          </Alert>
+
+          <Avatar src="/path/to/avatar.jpg" alt="User avatar" />
+          <AvatarGroup
+            images={[
+              { src: '/a.jpg', alt: 'A' },
+              { src: '/b.jpg', alt: 'B' },
+            ]}
+          />
+
+          <Badge>9</Badge>
+          <Button onClick={() => {}}>Primary</Button>
+          <IconButton icon="star" aria-label="star" />
+          <Checkbox checked={false} onChange={() => {}} />
+          <Radio name="r" value="1" checked={false} onChange={() => {}} />
+          <Switch checked={false} onChange={() => {}} />
+          <Slider min={0} max={100} value={50} onChange={() => {}} />
+          <SizePicker
+            availableSizes={['S','M','L']}
+            selectedSize="M"
+            onChange={() => {}}
+          />
+          <Input value="" onChange={() => {}} placeholder="Type…" />
+          <Dropdown />
+          <Menu
+            isOpen={true}
+            onClose={() => {}}
+            options={['One','Two']}
+            onSelectOption={() => {}}
+          />
+          <Modal isOpen={true} onClose={() => {}}>
+            <div className="p-4">Modal content</div>
+          </Modal>
+          <Toast message="This is a toast" onClose={() => {}} />
+
         </div>
       </section>
 
-      {/* ICON BUTTON */}
+      {/* Data Display */}
       <section>
-        <h2 className="text-xl font-semibold mb-2">IconButton</h2>
-        <div className="space-x-2">
-          <IconButton icon="menu" aria-label="Open menu" />
-          <IconButton icon="search" aria-label="Search" />
-          <IconButton icon="cart" aria-label="Add to cart" />
+        <h2 className="text-2xl mb-4">Data Display</h2>
+        <Table>
+          <TableRow>
+            <TableCell>Cell</TableCell>
+          </TableRow>
+        </Table>
+        <List>
+          <ListItem>Item</ListItem>
+        </List>
+        <Divider />
+        <ProgressBar value={50} max={100} />
+        <Tag>New</Tag>
+      </section>
+
+      {/* Media & Icons */}
+      <section>
+        <h2 className="text-2xl mb-4">Media & Icons</h2>
+        <div className="flex flex-wrap gap-4">
+          <Icon name="heart" size={24} />
+          <Tooltip content="Tooltip text">
+            <Button>Hover me</Button>
+          </Tooltip>
+          <ProductCard product={sampleProduct} />
+          <BlogCard post={samplePost} />
         </div>
       </section>
-
-      {/* SIZE PICKER */}
-      <section>
-        <h2 className="text-xl font-semibold mb-2">SizePicker</h2>
-        <SizePicker
-          availableSizes={['XS', 'S', 'M', 'L', 'XL']}
-          selectedSize="M"
-          onChange={(size) => console.log('picked', size)}
-        />
-      </section>
-
-      {/* …repeat a <section> for each of the remaining atoms/molecules… */}
-    </main>
+    </div>
   );
 }

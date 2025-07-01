@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 import Header from './layouts/Header';
+import RequireAuth from './routes/RequireAuth';
 
 // default‐exported pages
 const HomePage           = React.lazy(() => import('./pages/Home'));
@@ -17,25 +18,26 @@ const ForbiddenPage      = React.lazy(() => import('./pages/Errors/Forbidden'));
 const ServerErrorPage    = React.lazy(() => import('./pages/Errors/ServerError'));
 const NotFoundPage       = React.lazy(() => import('./pages/NotFound/NotFound'));
 
-// named‐exported pages (wrap with .then to assign to default)
+// named‐exported pages
 const CartPage = React.lazy(() =>
   import('./pages/Cart/CartPage').then(mod => ({ default: mod.CartPage }))
 );
-
 const CheckoutPage = React.lazy(() =>
   import('./pages/Checkout/CheckoutPage').then(mod => ({ default: mod.CheckoutPage }))
 );
-
 const CheckoutFieldsPage = React.lazy(() =>
   import('./pages/Checkout/CheckoutFieldsPage').then(mod => ({ default: mod.CheckoutFieldsPage }))
 );
-
 const CheckoutSuccessPage = React.lazy(() =>
   import('./pages/Checkout/CheckoutSuccessPage').then(mod => ({ default: mod.CheckoutSuccessPage }))
 );
-
 const ProductPage = React.lazy(() =>
   import('./pages/Product/ProductPage').then(mod => ({ default: mod.ProductPage }))
+);
+
+// private page (default export)
+const PrivatePage = React.lazy(() =>
+  import('./pages/Private/Private')
 );
 
 export default function App() {
@@ -45,6 +47,7 @@ export default function App() {
       <main className="flex-1">
         <Suspense fallback={<div className="p-8 text-center">Loading…</div>}>
           <Routes>
+
             {/* public */}
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
@@ -68,6 +71,16 @@ export default function App() {
             {/* misc */}
             <Route path="/account" element={<AccountPage />} />
             <Route path="/contact" element={<ContactPage />} />
+
+            {/* private */}
+            <Route
+              path="/private"
+              element={
+                <RequireAuth>
+                  <PrivatePage />
+                </RequireAuth>
+              }
+            />
 
             {/* errors */}
             <Route path="/403" element={<ForbiddenPage />} />
