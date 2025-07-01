@@ -1,4 +1,3 @@
-// webpack.config.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
@@ -27,49 +26,40 @@ module.exports = {
       // Global CSS + PostCSS/Tailwind
       {
         test: /\.css$/i,
-        use: [
-          'style-loader',
-          'css-loader',
-          'postcss-loader',
-        ],
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
 
-      // Your existing asset/resource rules (images, fonts, etc.)
+      // SVG sprite for icons.svg
       {
-        test: /\.(png|jpe?g|gif|ico|webp)$/i,
-        type: 'asset/resource',
-      },
-
-      // === SVG sprite rule ===
-      {
-        test: /\.svg$/i,
-        include: path.resolve(__dirname, 'src/assets/icons'),
+        test: /icons\.svg$/i,
+        include: path.resolve(__dirname, 'src/assets/images'),
         use: [
           {
             loader: 'svg-sprite-loader',
             options: {
               extract: true,
-              spriteFilename: 'sprite-[hash].svg',
+              spriteFilename: 'images/icons.svg',
             },
           },
-          // optional: optimize each SVG
-          {
-            loader: 'svgo-loader',
-            options: {
-              plugins: [
-                { removeTitle: true },
-                { convertColors: { shorthex: false } },
-                { convertPathData: false },
-              ],
-            },
-          },
+          'svgo-loader',
         ],
       },
 
-      // === Fallback SVG rule for CSS/background-icons etc. ===
+      // Other image assets under src/assets/images
       {
-        test: /\.svg$/i,
-        exclude: path.resolve(__dirname, 'src/assets/icons'),
+        test: /\.(png|jpe?g|gif|ico|webp|svg)$/i,
+        include: path.resolve(__dirname, 'src/assets/images'),
+        exclude: /icons\.svg$/i,
+        type: 'asset/resource',
+        generator: {
+          // flatten images into /images
+          filename: 'images/[name][ext]',
+        },
+      },
+
+      // Fallback for other assets (fonts, etc.)
+      {
+        test: /\.(eot|ttf|woff|woff2)$/i,
         type: 'asset/resource',
       },
     ],
@@ -80,7 +70,7 @@ module.exports = {
       inject: 'body',
     }),
 
-    // Pull out the generated sprite into its own file
+    // Extract SVG sprite
     new SpriteLoaderPlugin({ plainSprite: true }),
   ],
   devServer: {
