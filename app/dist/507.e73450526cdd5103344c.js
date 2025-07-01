@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[507],{507:(e,r,c)=>{c.r(r),c.d(r,{CheckoutPage:()=>s});var n=c(848);const s=()=>(0,n.jsx)("div",{children:"Checkout — step 1: review your cart"})}}]);

@@ -5,8 +5,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
-import Header from './layouts/Header';
-import Footer from './layouts/Footer';
 import App from './App';
 
 import '../style/index.css';
@@ -26,9 +24,7 @@ root.render(
   <React.StrictMode>
     <AuthProvider>
       <BrowserRouter>
-      <Header />
       <App />
-      <Footer />
       </BrowserRouter>
     </AuthProvider>
   </React.StrictMode>

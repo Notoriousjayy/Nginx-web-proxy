@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-        "baseUrl": ".",                 // root of your `app/`
+    "baseUrl": ".",                   
     "paths": {
-      "@components/*": ["components/*"],
-      "@layouts/*":    ["layouts/*"],
+      "@components/*": ["src/components/*"],
+      "@layouts/*":    ["src/layouts/*"],
       "@data/*":       ["src/data/*"],
       "@pages/*":      ["src/pages/*"]
     },
@@ -18,5 +18,8 @@
     "sourceMap": true,
     "outDir": "dist"
   },
-  "include": ["src", "components", "layouts", "src/custom.d.ts"]
+  "include": [
+    "src",            // <-- make sure custom.d.ts lives under here
+    "src/custom.d.ts" // <-- if you put it somewhere else
+  ]
 }
