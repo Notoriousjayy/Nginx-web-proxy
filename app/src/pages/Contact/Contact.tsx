@@ -1,5 +1,6 @@
 // app/src/pages/Contact.tsx
 import React, { useState } from 'react'
+import { contactStyles } from './ContactStyles'
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
@@ -17,7 +18,7 @@ export default function Contact() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-lg">
+    <main style={contactStyles} className="container mx-auto px-4 py-8 max-w-lg">
       <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="block">

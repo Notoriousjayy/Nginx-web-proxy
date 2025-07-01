@@ -1,1 +1,3 @@
-export { default } from './Account'
+// index.ts
+export { default } from './Account';
+export { accountStyles } from './AccountStyles';

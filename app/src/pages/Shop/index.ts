@@ -1,1 +1,3 @@
-export { default } from './Shop'
+// index.ts
+export { default } from './Shop';
+export { shopStyles } from './ShopStyles';

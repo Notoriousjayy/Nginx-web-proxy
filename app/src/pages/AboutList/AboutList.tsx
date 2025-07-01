@@ -1,11 +1,12 @@
-// app/src/pages/AboutList.tsx
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { robots } from '../../data/robots'
+// AboutList.tsx
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { robots } from '../../data/robots';
+import { aboutListStyles } from './AboutListStyles';
 
 export default function AboutList() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main style={aboutListStyles} className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Our Robots</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {robots.map(robot => (

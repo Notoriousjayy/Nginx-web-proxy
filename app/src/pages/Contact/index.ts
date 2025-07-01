@@ -1,1 +1,3 @@
-export { default } from './Contact'
+// index.ts
+export { default } from './Contact';
+export { contactStyles } from './ContactStyles';

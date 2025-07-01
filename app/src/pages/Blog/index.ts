@@ -1,1 +1,3 @@
-export { default } from './Blog'
+// index.ts
+export { default } from './Blog';
+export { blogStyles } from './BlogStyles';

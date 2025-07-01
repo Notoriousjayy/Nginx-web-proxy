@@ -1,3 +1,4 @@
+// About.tsx
 import React from 'react';
 import { aboutStyles } from './AboutStyles';
 

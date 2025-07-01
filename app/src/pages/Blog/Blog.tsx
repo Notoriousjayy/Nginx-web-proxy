@@ -1,7 +1,12 @@
-// app/src/pages/Blog.tsx
-import React from 'react'
-import BlogList from '../BlogList'
+// Blog.tsx
+import React from 'react';
+import BlogList from '../BlogList';
+import { blogStyles } from './BlogStyles';
 
 export default function Blog() {
-  return <BlogList />
+  return (
+    <div style={blogStyles}>
+      <BlogList />
+    </div>
+  );
 }

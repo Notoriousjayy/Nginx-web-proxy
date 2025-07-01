@@ -1,3 +1,4 @@
+// AboutListStyles.ts
 import { CSSProperties } from 'react';
 
 export const aboutListStyles: CSSProperties = {
