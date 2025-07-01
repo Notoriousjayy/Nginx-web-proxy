@@ -2,14 +2,12 @@
 import '../style/index.css'; // ← import your global CSS (Tailwind, etc.)
 
 import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import { AuthProvider } from './contexts/AuthContext';
+import '../style/index.css';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-
-import App from './App';
-
-import '../style/index.css';
-import { AuthProvider } from './contexts/AuthContext';
-
 // If you're targeting older browsers, you might need to import a polyfill for fetch, etc.
 // import 'core-js/stable';
 // import 'regenerator-runtime/runtime';

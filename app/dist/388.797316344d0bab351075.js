@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[388],{388:(e,n,i)=>{i.r(n),i.d(n,{default:()=>s});var a=i(848);const r={maxWidth:"960px",margin:"0 auto",padding:"2rem 1rem",lineHeight:1.6},s=()=>(0,a.jsx)("div",{style:r})}}]);

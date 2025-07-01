@@ -1,0 +1,1 @@
+{"version":3,"file":"main.f35f51b9f988a209d0e4.js","mappings":"2JAEe,SAASA,IAAgB,OAAO,8CAA6B,C","sources":["webpack://nginx-web-proxy/./src/pages/Errors/ServerError.tsx"],"sourcesContent":["// src/pages/Errors/ServerError.tsx\r\nimport React from 'react';\r\nexport default function ServerError() { return <h1>500 — Server Error</h1>; }"],"names":["ServerError"],"sourceRoot":""}

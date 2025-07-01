@@ -1,6 +1,7 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "baseUrl": ".",                   
+    "baseUrl": ".",
     "paths": {
       "@components/*": ["src/components/*"],
       "@layouts/*":    ["src/layouts/*"],
@@ -18,8 +19,14 @@
     "sourceMap": true,
     "outDir": "dist"
   },
+
   "include": [
-    "src",            // <-- make sure custom.d.ts lives under here
-    "src/custom.d.ts" // <-- if you put it somewhere else
+    "src/**/*",
+    "src/svg.d.ts"
+  ],
+
+  "exclude": [
+    "dist",
+    "node_modules"
   ]
 }

@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[318],{318:(e,n,r)=>{r.r(n),r.d(n,{default:()=>i});var u=r(848);function i(){return(0,u.jsx)("h1",{children:"403 — Forbidden"})}}}]);

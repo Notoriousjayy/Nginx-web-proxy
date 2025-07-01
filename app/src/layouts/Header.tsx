@@ -1,19 +1,30 @@
+// src/layouts/Header.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-// plain URL string, courtesy of asset/resource
-import logoUrl from '../assets/images/logo.svg';
+// 1) Inline component:
+// As a component (SVGR)
+import { ReactComponent as Logo } from '../assets/images/logo.svg'
 
-console.log(logoUrl)
+// As a URL
+import logoUrl from '../assets/images/logo.svg?url'
+
+
+
+console.log('Logo component:', Logo);
+console.log('Logo URL:', logoUrl);
+
 export default function Header() {
   return (
     <header className="bg-white shadow-sm">
       <nav className="container mx-auto flex items-center justify-between p-4">
         <Link to="/">
-          <img
-            src={logoUrl}
-            alt="Binaryville logo"
-            className="h-8 w-auto"
+          {/* SVG as React component */}
+          <Logo
+            width={32}
+            height={32}
+            className="h-8 w-auto text-blue-600"
+            aria-label="Binaryville logo"
           />
         </Link>
 
@@ -27,7 +38,11 @@ export default function Header() {
           ))}
         </ul>
 
-        <Link to="/account">Account</Link>
+        {/* Example of using the static URL if you really need it */}
+        <Link to="/account">
+          <img src={logoUrl} alt="Binaryville logo (from URL)" className="h-4 w-auto ml-4"/>
+          Account
+        </Link>
       </nav>
     </header>
   );

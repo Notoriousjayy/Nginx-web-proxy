@@ -1,90 +1,87 @@
 // webpack.config.js
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const SpriteLoaderPlugin = require('svg-sprite-loader/plugin')
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
+
   entry: './src/index.tsx',
+
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].[contenthash].js',
-    publicPath: '',
+    filename: 'bundle.[contenthash].js',
     clean: true,
   },
+
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
   },
+
   module: {
     rules: [
-      // 1) icons.svg → sprite (unchanged)
-      {
-        test: /icons\.svg$/i,
-        include: path.resolve(__dirname, 'src/assets/images'),
-        use: [
-          {
-            loader: 'svg-sprite-loader',
-            options: { extract: true, spriteFilename: 'images/icons.svg' },
-          },
-        ],
-      },
-
-      // 2) all other SVGs → either ReactComponent or asset/resource
+      // 1) SVGR: import SVG as ReactComponent (exclude ?url)
       {
         test: /\.svg$/i,
-        oneOf: [
-          // 2a) import … from 'logo.svg?react' → inline ReactComponent
+        issuer: /\.[jt]sx?$/,
+        resourceQuery: { not: [/url/] }, // exclude imports ending in ?url
+        use: [
           {
-            resourceQuery: /react/,        // *.svg?react
-            use: ['@svgr/webpack'],
-          },
-          // 2b) default import → emits file, returns URL
-          {
-            type: 'asset/resource',
-            generator: {
-              filename: 'images/[name].[contenthash][ext]',
-            },
+            loader: '@svgr/webpack',
+            options: { exportType: 'named' },
           },
         ],
       },
 
-      // 3) TS / JS
+      // 2) SVG as URL: import foo.svg?url
       {
-        test: /\.[jt]sx?$/,
+        test: /\.svg$/i,
+        resourceQuery: /url/, 
+        type: 'asset/resource',
+      },
+
+      // 3) Images (PNG, JPG, GIF)
+      {
+        test: /\.(png|jpe?g|gif)$/i,
+        type: 'asset/resource',
+      },
+
+      // 4) Fonts & other assets
+      {
+        test: /\.(woff2?|eot|ttf|otf)$/i,
+        type: 'asset/resource',
+      },
+
+      // 5) CSS (Tailwind / PostCSS)
+      {
+        test: /\.css$/i,
+        include: [path.resolve(__dirname, 'style')],
+        use: [
+          'style-loader',    // injects CSS into the DOM
+          'css-loader',      // resolves @import, url()
+          'postcss-loader',  // runs Tailwind & autoprefixer (per postcss.config.js)
+        ],
+      },
+
+      // 6) TypeScript / TSX
+      {
+        test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
-
-      // 4) CSS
-      {
-        test: /\.css$/i,
-        use: ['style-loader', 'css-loader', 'postcss-loader'],
-      },
-
-      // 5) other raster images
-      {
-        test: /\.(png|jpe?g|gif|ico|webp)$/i,
-        include: path.resolve(__dirname, 'src/assets/images'),
-        type: 'asset/resource',
-        generator: {
-          filename: 'images/[name].[contenthash][ext]',
-        },
-      },
-
-      // 6) fonts
-      {
-        test: /\.(eot|ttf|woff|woff2)$/i,
-        type: 'asset/resource',
-        generator: {
-          filename: 'fonts/[name].[contenthash][ext]',
-        },
-      },
     ],
   },
+
   plugins: [
-    new HtmlWebpackPlugin({ template: './src/public/index.html', inject: 'body' }),
+    new HtmlWebpackPlugin({
+      template: './src/public/index.html',
+      inject: 'body',
+    }),
     new SpriteLoaderPlugin({ plainSprite: true }),
   ],
+
+  devtool: 'source-map',
+
   devServer: {
     static: {
       directory: path.resolve(__dirname, 'dist'),
@@ -94,4 +91,4 @@ module.exports = {
     open: true,
     port: 3000,
   },
-}
+};
