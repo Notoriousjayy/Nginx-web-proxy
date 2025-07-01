@@ -2,5 +2,8 @@
 import { CSSProperties } from 'react';
 
 export const blogPostStyles: CSSProperties = {
-  // inline styles for BlogPost…
+  maxWidth: '800px',
+  margin: '0 auto',
+  padding: '1rem',
+  lineHeight: 1.8,
 };

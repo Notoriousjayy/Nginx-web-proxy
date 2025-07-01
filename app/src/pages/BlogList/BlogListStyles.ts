@@ -2,5 +2,7 @@
 import { CSSProperties } from 'react';
 
 export const blogListStyles: CSSProperties = {
-  // inline styles for BlogList…
+  display: 'grid',
+  gap: '1.5rem',
+  gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))',
 };

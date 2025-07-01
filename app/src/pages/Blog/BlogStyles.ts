@@ -2,5 +2,6 @@
 import { CSSProperties } from 'react';
 
 export const blogStyles: CSSProperties = {
-  // any Blog page–specific inline styles
+  backgroundColor: '#fafafa',
+  padding: '2rem 1rem',
 };

@@ -2,5 +2,10 @@
 import { CSSProperties } from 'react';
 
 export const aboutRobotStyles: CSSProperties = {
-  // any inline-style mappings for AboutRobot…
+  /* Portrait view */
+  textAlign: 'center',
+  maxWidth: '800px',
+  margin: '0 auto',
+  padding: '2rem 1rem',
+  lineHeight: 1.6,
 };

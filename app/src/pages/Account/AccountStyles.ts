@@ -2,5 +2,7 @@
 import { CSSProperties } from 'react';
 
 export const accountStyles: CSSProperties = {
-  // inline styles for Account page
+  backgroundColor: '#f9fafb',
+  minHeight: 'calc(100vh - 64px)',
+  padding: '2rem 1rem',
 };

@@ -2,5 +2,9 @@
 import { CSSProperties } from 'react';
 
 export const aboutStyles: CSSProperties = {
-  // no incline-class mappings found for About yet
+  /* Simple centred column */
+  maxWidth: '960px',
+  margin: '0 auto',
+  padding: '2rem 1rem',
+  lineHeight: 1.6,
 };
