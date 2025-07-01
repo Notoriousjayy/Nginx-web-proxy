@@ -81,7 +81,7 @@ export { H4, type H4Props } from '../../components/H4'
 
 
 export default function StyleGuide() {
-  const sampleProduct = { ...products[0], slug: products[0].id.toString() }
+  const sampleProduct = { ...products[0], slug: products[0].slug.toString() }
   const samplePost: BlogPost = blogPosts[0]
   const allCategories = Array.from(new Set(blogPosts.map((p) => p.category)))
   const colorOptions = ['black', 'gray', 'white']

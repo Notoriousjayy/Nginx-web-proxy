@@ -1,1 +1,20 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"/><title>NotoriousJayy NGINX Proxy UI</title></head><body><div id="root"></div><script defer="defer" src="bundle.fb4dfe10fa95622a669e.js"></script></body></html>
+<!doctype html><html lang="en"><head><link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet"></head><body><div id="root"></div><script>(function(id,path){
+  var xhr = new XMLHttpRequest(),
+      div = document.createElement('div'),
+      body = document.body;
+  div.id = id + '-svg';
+  body.insertBefore(div, body.firstChild);
+  xhr.open('GET', path, true);
+  xhr.onload = function(){
+    div.innerHTML = xhr.responseText;
+    div.className = 'visually-hidden';
+  };
+  xhr.onerror = function(){
+    body.className += ' no-svg';
+  };
+  xhr.send();
+})(
+  'icons',
+  // absolute URL to your built sprite
+  '/images/icons.svg'
+);</script><script defer="defer" src="bundle.63db0bef4a9ee7ba5fec.js"></script></body></html>

@@ -1,1 +1,2 @@
-export { IconButton, type IconButtonProps } from './IconButton'
+// src/components/IconButton/index.ts
+export { default as IconButton } from './IconButton';
