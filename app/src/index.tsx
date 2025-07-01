@@ -8,7 +8,9 @@ import { BrowserRouter } from 'react-router-dom';
 import Header from './layouts/Header';
 import Footer from './layouts/Footer';
 import App from './App';
+
 import '../style/index.css';
+import { AuthProvider } from './contexts/AuthContext';
 
 // If you're targeting older browsers, you might need to import a polyfill for fetch, etc.
 // import 'core-js/stable';
@@ -22,10 +24,12 @@ if (!container) {
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
       <Header />
       <App />
       <Footer />
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>
 );
