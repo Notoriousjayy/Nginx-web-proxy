@@ -1,3 +1,4 @@
+// webpack.config.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
@@ -45,19 +46,28 @@ module.exports = {
         ],
       },
 
-      // Other image assets under src/assets/images
+      // Other image assets (png/jpg/ico/webp)
       {
-        test: /\.(png|jpe?g|gif|ico|webp|svg)$/i,
+        test: /\.(png|jpe?g|gif|ico|webp)$/i,
         include: path.resolve(__dirname, 'src/assets/images'),
-        exclude: /icons\.svg$/i,
         type: 'asset/resource',
         generator: {
-          // flatten images into /images
           filename: 'images/[name][ext]',
         },
       },
 
-      // Fallback for other assets (fonts, etc.)
+      // All other SVGs (including logo.svg)
+      {
+        test: /\.svg$/i,
+        exclude: path.resolve(__dirname, 'src/assets/images/icons'),
+        include: path.resolve(__dirname, 'src/assets/images'),
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]',
+        },
+      },
+
+      // Fallback for fonts and other assets
       {
         test: /\.(eot|ttf|woff|woff2)$/i,
         type: 'asset/resource',
@@ -69,8 +79,6 @@ module.exports = {
       template: './src/public/index.html',
       inject: 'body',
     }),
-
-    // Extract SVG sprite
     new SpriteLoaderPlugin({ plainSprite: true }),
   ],
   devServer: {
