@@ -2,10 +2,10 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
-
   entry: './src/index.tsx',
 
   output: {
@@ -15,16 +15,28 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+    // Tell webpack what file extensions to look out for when you do `import ... from '...'`
+    extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+    alias: {
+      // so `import foo from '/images/foo.png'` → src/assets/images/foo.png
+      '/images': path.resolve(__dirname, 'src/assets/images'),
+    },
   },
 
   module: {
     rules: [
-      // 1) SVGR: import SVG as ReactComponent (exclude ?url)
+      // 1) Typescript + JSX support
+      {
+        test: /\.[jt]sx?$/,
+        exclude: /node_modules/,
+        use: 'ts-loader',
+      },
+
+      // 2) SVG as React components (svgr)
       {
         test: /\.svg$/i,
         issuer: /\.[jt]sx?$/,
-        resourceQuery: { not: [/url/] }, // exclude imports ending in ?url
+        resourceQuery: { not: [/url/] },
         use: [
           {
             loader: '@svgr/webpack',
@@ -33,41 +45,50 @@ module.exports = {
         ],
       },
 
-      // 2) SVG as URL: import foo.svg?url
+      // 3) SVG & images as files
       {
         test: /\.svg$/i,
-        resourceQuery: /url/, 
+        resourceQuery: /url/,
         type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]',
+        },
       },
-
-      // 3) Images (PNG, JPG, GIF)
       {
         test: /\.(png|jpe?g|gif)$/i,
         type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]',
+        },
       },
 
-      // 4) Fonts & other assets
+      // 4) Font files
       {
         test: /\.(woff2?|eot|ttf|otf)$/i,
         type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name][ext]',
+        },
       },
 
-      // 5) CSS (Tailwind / PostCSS)
+      // 5) CSS + Tailwind
       {
         test: /\.css$/i,
-        include: [path.resolve(__dirname, 'style')],
-        use: [
-          'style-loader',    // injects CSS into the DOM
-          'css-loader',      // resolves @import, url()
-          'postcss-loader',  // runs Tailwind & autoprefixer (per postcss.config.js)
-        ],
-      },
-
-      // 6) TypeScript / TSX
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
         exclude: /node_modules/,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+              url: {
+                // only resolve relative URLs; leave `/images/...` intact
+                filter: (url) => !url.startsWith('/images/'),
+              },
+            },
+          },
+          'postcss-loader',
+        ],
       },
     ],
   },
@@ -78,6 +99,19 @@ module.exports = {
       inject: 'body',
     }),
     new SpriteLoaderPlugin({ plainSprite: true }),
+
+    // copy your static image folder, but ignore SVGs (so webpack’s asset rule owns them)
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'src/assets/images'),
+          to: 'images',
+          globOptions: {
+            ignore: ['**/*.svg'],
+          },
+        },
+      ],
+    }),
   ],
 
   devtool: 'source-map',

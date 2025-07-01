@@ -1,12 +1,13 @@
 // src/data/blogPosts.ts
 
 export interface Post {
-  slug: string;
-  title: string;
-  date: string;
-  content: string;
-  category: string;
+  slug: string
+  title: string
+  date: string
+  content: string
+  category: string
 }
+
 
 export const blogPosts: Post[] = [
   {
