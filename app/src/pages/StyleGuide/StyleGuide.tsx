@@ -6,7 +6,7 @@ import { Flex } from '../../components/Flex'
 import { Grid } from '../../components/Grid'
 
 // Inputs & Controls
-import { Accordion } from '../../components/Accordion'
+import { Accordion } from '../../components/Accordion/Accordion'
 import { Alert } from '../../components/Alert'
 import { Avatar } from '../../components/Avatar'
 import { AvatarGroup } from '../../components/AvatarGroup'

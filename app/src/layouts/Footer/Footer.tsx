@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export const Footer: React.FC = () => {
   const robots = [
@@ -33,13 +34,13 @@ export const Footer: React.FC = () => {
         </h2>
 
         <ul className="display:flex flex-wrap:wrap justify-content:center margin-horizontal:-16px margin-bottom:-32px">
-          {robots.map(r => (
+          {robots.map((r) => (
             <li
               key={r.id}
               className="display:flex flex-direction:column flex-grow:0 flex-shrink:0 margin-bottom:32px padding-horizontal:16px"
             >
-              <a
-                href={`/about/${r.id}/`}
+              <Link
+                to={`/about/${r.id}`}
                 className="group color:blue-324f6b font-size:20px font-weight:500 line-height:1.2 text-align:center"
               >
                 <span className="border-radius:1000 background-image:character-avatar display:inline-block margin-bottom:8px group:hocus__background-image:character-avatar-hocus">
@@ -54,7 +55,7 @@ export const Footer: React.FC = () => {
                 <span className="display:block group:hocus__color:orange-ff583d">
                   {r.name}
                 </span>
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
@@ -62,27 +63,23 @@ export const Footer: React.FC = () => {
         <nav className="margin-horizontal:-48px">
           <ul className="display:inline-flex justify-content:center flex-wrap:wrap margin-vertical:32px margin-horizontal:auto width:100% @mq-800--padding-top:8px">
             <li className="display:flex justify-content:center margin-bottom:32px width:100% @mq-800--order:1 @mq-800--width:auto">
-              <a href="/" aria-label="Home">
+              <Link to="/" aria-label="Home">
                 <img
                   src="/images/logo.svg"
                   alt="Binaryville logo"
                   width={170}
                   height={88}
                 />
-              </a>
+              </Link>
             </li>
-            {['About','Blog','Contact','Shop'].map(link => (
+            {['About', 'Blog', 'Contact', 'Shop'].map((link) => (
               <li key={link}>
-                <a
-                  href={
-                    link === 'Shop'
-                      ? '/shop'
-                      : `/${link.toLowerCase()}/`
-                  }
+                <Link
+                  to={link === 'Shop' ? '/shop' : `/${link.toLowerCase()}`}
                   className="color:inherit font-size:20px font-weight:500 line-height:1.2 margin-horizontal:8px padding-horizontal:4px :hocus--color:orange-ff583d @mq-800--margin-horizontal:32px"
                 >
                   {link}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -90,17 +87,16 @@ export const Footer: React.FC = () => {
 
         <h3 className="visually-hidden">Follow us</h3>
         <ul className="display:flex flex-wrap:wrap justify-content:center margin-horizontal:-8px margin-bottom:24px">
-          {social.map(s => (
+          {social.map((s) => (
             <li key={s.name} className="padding-horizontal:8px margin-bottom:16px">
               <a
                 href={s.url}
                 aria-label={`Find us on ${s.name}`}
                 className="color:blue-324f6b :hocus--color:orange-ff583d"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <svg
-                  className="display:inline-block size:40px svg-fill-color:current"
-                  focusable="false"
-                >
+                <svg className="display:inline-block size:40px svg-fill-color:current" focusable="false">
                   <use xlinkHref={`#${s.name}`} />
                 </svg>
               </a>
