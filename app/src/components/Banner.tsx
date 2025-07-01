@@ -1,13 +1,10 @@
 import React from 'react'
 
-interface BannerProps {
-  message: string
-}
-
-export function Banner({ message }: BannerProps) {
+export default function Banner() {
   return (
-    <div className="bg-blue-600 text-white py-3 px-4 text-center">
-      {message}
+    <div className="banner">
+      {/* Put your banner markup here */}
+      Welcome to my site!
     </div>
   )
 }
