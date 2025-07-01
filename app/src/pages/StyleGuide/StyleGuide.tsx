@@ -333,7 +333,7 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-      +      {/* Color Picker */}
+            {/* Color Picker */}
       <section>
         <h2 className="text-2xl mb-4">color-picker</h2>
         <div className="padding">
@@ -354,7 +354,7 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-      +      {/* Content Hero */}
+            {/* Content Hero */}
       <section>
         <h2 className="text-2xl mb-4">content-hero</h2>
         <div>
@@ -372,7 +372,7 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-      +      {/* Design Callout */}
+            {/* Design Callout */}
       <section>
         <h2 className="text-2xl mb-4">design-callout</h2>
         <div className="padding">
@@ -396,7 +396,7 @@ export default function StyleGuide() {
           selectedOption={state}
           onChange={setState}
         />
-        +      {/* Form Label */}
+              {/* Form Label */}
       <section>
         <h2 className="text-2xl mb-4">form-label</h2>
         <div className="padding">
@@ -433,7 +433,7 @@ export default function StyleGuide() {
   "type": "email"
 }`}</pre>
       </section>
-      +
+      
       {/* Form Title */}
       <section>
         <h2 className="text-2xl mb-4">form-title</h2>
@@ -453,7 +453,7 @@ export default function StyleGuide() {
   "type": "checkbox"
 }`}</pre>
       </section>
-      +
+      
       {/* Form Toggle Input Group */}
       <section>
         <h2 className="text-2xl mb-4">form-toggle-input-group</h2>

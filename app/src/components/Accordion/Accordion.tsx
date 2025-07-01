@@ -1,12 +1,11 @@
-// src/components/Accordion.tsx
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode } from 'react'
 
 export interface AccordionProps {
-  items: { title: string; content: ReactNode }[];
+  items: { title: string; content: ReactNode }[]
 }
 
-export const Accordion: React.FC<AccordionProps> = ({ items }) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+export function Accordion({ items }: AccordionProps) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
     <div className="space-y-2">
@@ -26,5 +25,5 @@ export const Accordion: React.FC<AccordionProps> = ({ items }) => {
         </div>
       ))}
     </div>
-  );
-};
+  )
+}

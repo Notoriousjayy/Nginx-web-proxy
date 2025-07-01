@@ -1,6 +1,10 @@
+// src/components/ShopHero/ShopHero.tsx
 import React from 'react'
 
-export function ShopHero() {
+/** Empty for now, but here’s where you’d add future props */
+export interface ShopHeroProps {}
+
+export function ShopHero(_props: ShopHeroProps) {
   return (
     <div className="background-image:shop-hero-yellow">
       <div className="mx-auto max-w-container px-8 flex flex-col items-center justify-between py-6 md:flex-row md:px-12">

@@ -1,6 +1,7 @@
 // src/layouts/Header.tsx
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Accordion } from '../../components/Accordion'
 
 // 1) Inline component via SVGR
 import { ReactComponent as Logo } from '../../assets/images/logo.svg'
@@ -30,28 +31,40 @@ export default function Header() {
           <Logo className="h-8 w-auto text-blue-600" />
         </Link>
 
-        <Link to="/account" className="flex items-center space-x-2 text-neutral-700 hover:text-orange-500">
+        <Link
+          to="/account"
+          className="flex items-center space-x-2 text-neutral-700 hover:text-orange-500"
+        >
           <img src={logoUrl} alt="Account" className="h-4 w-auto" />
           <span>Account</span>
         </Link>
       </nav>
 
       {mobileNavOpen && (
-        <nav className="md:hidden bg-white border-t border-neutral-200">
-          <ul className="flex flex-col p-4 space-y-2">
-            {pages.map((p) => (
-              <li key={p}>
-                <Link
-                  to={`/${p}`}
-                  className="block py-2 px-3 rounded hover:bg-neutral-100"
-                  onClick={() => setMobileNavOpen(false)}
-                >
-                  {p[0].toUpperCase() + p.slice(1)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className="md:hidden bg-white border-t border-neutral-200 p-4">
+          <Accordion
+            items={[
+              {
+                title: 'Menu',
+                content: (
+                  <ul className="flex flex-col space-y-2">
+                    {pages.map((p) => (
+                      <li key={p}>
+                        <Link
+                          to={`/${p}`}
+                          className="block py-2 px-3 rounded hover:bg-neutral-100"
+                          onClick={() => setMobileNavOpen(false)}
+                        >
+                          {p[0].toUpperCase() + p.slice(1)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ),
+              },
+            ]}
+          />
+        </div>
       )}
 
       {/* Desktop */}
@@ -70,7 +83,10 @@ export default function Header() {
           ))}
         </ul>
 
-        <Link to="/account" className="flex items-center space-x-2 text-neutral-700 hover:text-orange-500">
+        <Link
+          to="/account"
+          className="flex items-center space-x-2 text-neutral-700 hover:text-orange-500"
+        >
           <img src={logoUrl} alt="Binaryville logo (from URL)" className="h-4 w-auto" />
           <span>Account</span>
         </Link>
