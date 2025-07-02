@@ -1,52 +1,63 @@
-import React from 'react'
+// src/components/FormTextInput/FormTextInput.tsx
+import React, { ChangeEvent } from 'react'
 
-export interface FormTextInputProps {
+export interface FormTextInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** The label text */
   label: string
-  name: string
-  placeholder?: string
-  type?: string
 }
 
 export const FormTextInput: React.FC<FormTextInputProps> = ({
   label,
+  id,
   name,
-  placeholder,
   type = 'text',
-}) => (
-  <div className="padding">
-    <label
-      htmlFor={name}
-      className="
-        color:blue-265f8e 
-        display:block 
-        padding-bottom:8px 
-        font-size:14px 
-        font-weight:500
-      "
-    >
-      {label}
-    </label>
-    <div>
+  placeholder,
+  value,
+  onChange,
+  required,
+  className,
+  ...rest
+}) => {
+  const inputId = id ?? name
+  return (
+    <div className="p-4">
+      <label
+        htmlFor={inputId}
+        className="
+          text-blue-600 
+          block 
+          pb-2 
+          text-sm 
+          font-medium
+        "
+      >
+        {label}
+      </label>
       <input
-        id={name}
+        id={inputId}
         name={name}
         type={type}
         placeholder={placeholder}
-        className="
-          appearance:none 
-          background-color:neutral-ffffff 
-          border-color:neutral-4c5b5c 
-          border-style:solid 
-          border-width:1px 
-          color:neutral-483e40 
-          min-height:form-input 
-          padding:12px 
-          width:100% 
-          :hocus--border-color:neutral-000000
-        "
-        value=""
-        onChange={() => {}}
+        value={value}
+        onChange={onChange as (e: ChangeEvent<HTMLInputElement>) => void}
+        required={required}
+        className={`
+          w-full
+          px-3
+          py-2
+          border
+          border-gray-300
+          rounded
+          focus:outline-none
+          focus:ring-2
+          focus:ring-blue-500
+          ${className ?? ''}
+        `}
+        {...rest}
       />
     </div>
-  </div>
-)
+  )
+}
+
+FormTextInput.displayName = 'FormTextInput'
