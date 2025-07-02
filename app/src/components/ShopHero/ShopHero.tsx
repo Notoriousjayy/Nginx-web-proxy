@@ -22,12 +22,12 @@ export function ShopHero(_props: ShopHeroProps) {
           </p>
         </div>
         <div>
-          <img
+          {/* <img
             src="/images/product-montage.png"
             alt="Montage of products"
             className="max-w-full"
             width={761}
-          />
+          /> */}
         </div>
       </div>
     </div>

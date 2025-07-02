@@ -1,7 +1,7 @@
 // src/components/Footer.tsx
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { characters } from '../../data/characters'   // adjust path as needed
+import { characters } from '../../data/characters'
 import { ReactComponent as LogoIcon } from '../../assets/images/logo.svg'
 
 export const Footer: React.FC = () => {
@@ -22,8 +22,9 @@ export const Footer: React.FC = () => {
         <ul className="flex flex-wrap justify-center -mx-4 -mb-8">
           {characters.map(r => (
             <li key={r.id} className="px-4 mb-8 flex flex-col items-center">
+              {/* 👇 link directly into your CharacterDetail route */}
               <Link
-                to={`/about/${r.id}`}
+                to={`/characters/${r.id}`}
                 className="group text-center font-medium text-lg"
               >
                 <span className="inline-block rounded-full overflow-hidden mb-2 group-hover:shadow-lg">

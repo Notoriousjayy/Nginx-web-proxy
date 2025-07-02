@@ -13,7 +13,6 @@ import { AvatarGroup } from '../../components/AvatarGroup'
 import { Badge } from '../../components/Badge'
 import { Banner } from '../../components/Banner'
 import { Button } from '../../components/Button'
-
 import { Checkbox } from '../../components/Checkbox'
 import { Radio } from '../../components/Radio'
 import { Switch } from '../../components/Switch'
@@ -40,7 +39,7 @@ import Icon from '../../components/Icon'
 import { Tooltip } from '../../components/Tooltip'
 import ProductCard from '../../components/ProductCard'
 import { BlogCard } from '../../components/BlogCard'
-import { BlogCategories } from '../../components/BlogCategories'
+const CategoryPage       = React.lazy(() => import('../../pages/CategoryPage/CategoryPage'))
 
 // Panels & Boxes
 import BorderedPanel from '../../components/BorderedPanel'
@@ -53,8 +52,8 @@ import { blogPosts } from '../../data/blogPosts'
 import CharacterAvatar from '../../components/CharacterAvatar'
 import { CharacterCallout } from '../../components/CharacterCallout'
 import { CharacterHero, rexCharacter } from '../../components/CharacterHero'
-import {ColorPicker} from '../../components/ColorPicker'
-import {ContentHero} from '../../components/ContentHero'
+import { ColorPicker } from '../../components/ColorPicker'
+import { ContentHero } from '../../components/ContentHero'
 import { DesignCallout } from '../../components/DesignCallout'
 import { Footer } from '../../layouts/Footer'
 import { FormDropdown } from '../../components/FormDropdown'
@@ -67,42 +66,45 @@ import { FormToggleInputGroup } from '../../components/FormToggleInputGroup'
 import { HomeHero } from '../../components/HomeHero'
 import { MerchandiseBanner } from '../../components/MerchandiseBanner'
 import { PageTitle } from '../../components/PageTitle'
-import { Product } from '@components/Product'
-import { PromoCode } from '@components/PromoCode'
-import { QuantityChanger } from '@components/QuantityChanger'
-import { ShopHero } from '@components/ShopHero'
-import { IconButton } from '@components/IconButton/index'
-import { SocialIcon } from '@components/SocialIcon/SocialIcon'
-import { Swatches } from '@components/Swatches/Swatches'
-import { Svg } from '@components/Svg/Svg'
+import { Product } from '../../components/Product/Product'
+import { PromoCode } from '../../components/PromoCode'
+import { QuantityChanger } from '../../components/QuantityChanger'
+import { ShopHero } from '../../components/ShopHero'
+import { IconButton } from '../../components/IconButton'
+import { SocialIcon } from '../../components/SocialIcon/SocialIcon'
+import { Swatches } from '../../components/Swatches/Swatches'
+import { Svg } from '../../components/Svg/Svg'
+
 export { H2, type H2Props } from '../../components/H2'
 export { H3, type H3Props } from '../../components/H3'
 export { H4, type H4Props } from '../../components/H4'
-
 
 export default function StyleGuide() {
   const sampleProduct = { ...products[0], slug: products[0].slug.toString() }
   const samplePost: BlogPost = blogPosts[0]
   const allCategories = Array.from(new Set(blogPosts.map((p) => p.category)))
   const colorOptions = ['black', 'gray', 'white']
+
   const [state, setState] = React.useState('Alaska')
   const states = [
-     'Alabama',
-     'Alaska',
-     'American Samoa',
-     'Arizona',
-     'Arkansas',
-   ]
- 
+    'Alabama',
+    'Alaska',
+    'American Samoa',
+    'Arizona',
+    'Arkansas',
+  ]
 
-    const rex = {
+  // NEW: demo state for size-picker
+  const [selectedSize, setSelectedSize] = React.useState('S')
+
+  const rex = {
     id: 'rex',
     name: 'Rex',
     bio:
       'Rex is the Mayor of Binaryville, and a well-loved personality in town. He rose to robotdom from a microprocessor plant on the south side of town, where many famous and influential robots before him were conceived.',
   }
 
-    const contentHtml = `
+  const contentHtml = `
     <p class="margin-bottom:24px">
       On the edge of the world stands the progressive town of Binaryville, where technology is a way of life. The robots who live, work, and play in Binaryville learn from an early age that magic is made simply by combining 0’s and 1’s. For the Binaryville robots, every waking thought and every sleeping dream is consumed with unique permutations&hellip; and endless possibilities.
     </p>
@@ -115,44 +117,40 @@ export default function StyleGuide() {
  industry. Lorem Ipsum has been the industry's standard dummy text ever since the
  1500s, when an unknown printer…`
 
-    const oliveOptions = [
-     { label: 'Yes' },
-     { label: 'No' },
-     { label: 'It depends' },
-   ]
+  const oliveOptions = [
+    { label: 'Yes' },
+    { label: 'No' },
+    { label: 'It depends' },
+  ]
 
   return (
     <div className="p-8 space-y-12">
       <h1 className="text-3xl font-bold">Component Style Guide</h1>
 
+      {/* --- Page Title --- */}
       <section>
-  <h2 className="text-2xl mb-4">page-title</h2>
-  <div className="padding">
-    <PageTitle heading="Our Story" />
-  </div>
-  <pre className="p-2 font-mono text-sm">
+        <h2 className="text-2xl mb-4">page-title</h2>
+        <div className="padding">
+          <PageTitle heading="Our Story" />
+        </div>
+        <pre className="p-2 font-mono text-sm">
 {`{
   "heading": "Our Story"
 }`}
-  </pre>
-</section>
+        </pre>
+      </section>
 
-      {/* Banner */}
+      {/* --- Banner --- */}
       <section>
         <h2 className="text-2xl mb-4">banner</h2>
         <Banner content="Your order qualifies for Free&nbsp;Shipping!" />
       </section>
 
-      {/* Button */}
+      {/* --- Button --- */}
       <section>
         <h2 className="text-2xl mb-4">button</h2>
         <div className="padding">
-          <Button
-            href="#"
-            label="Button"
-            target="_blank"
-            type="primary"
-          />
+          <Button href="#" label="Button" target="_blank" type="primary" />
         </div>
         <pre className="p-2 font-mono text-sm">
 {`{
@@ -164,7 +162,7 @@ export default function StyleGuide() {
         </pre>
       </section>
 
-      {/* Inputs & Controls */}
+      {/* --- Inputs & Controls --- */}
       <section>
         <h2 className="text-2xl mb-4">Inputs & Controls</h2>
         <div className="flex flex-wrap gap-4">
@@ -188,7 +186,7 @@ export default function StyleGuide() {
           <Checkbox checked={false} onChange={() => {}} />
           <Radio name="r" value="1" checked={false} onChange={() => {}} />
           <Switch checked={false} onChange={() => {}} />
-          <Slider min={0} max={100} value={50} onChange={() => {}} />`
+          <Slider min={0} max={100} value={50} onChange={() => {}} />
           <Input value="" onChange={() => {}} placeholder="Type…" />
           <Dropdown />
           <Menu
@@ -204,7 +202,7 @@ export default function StyleGuide() {
         </div>
       </section>
 
-      {/* Data Display */}
+      {/* --- Data Display --- */}
       <section>
         <h2 className="text-2xl mb-4">Data Display</h2>
         <Table>
@@ -220,7 +218,7 @@ export default function StyleGuide() {
         <Tag>New</Tag>
       </section>
 
-      {/* Media & Icons */}
+      {/* --- Media & Icons --- */}
       <section>
         <h2 className="text-2xl mb-4">Media & Icons</h2>
         <div className="flex flex-wrap gap-4">
@@ -233,13 +231,13 @@ export default function StyleGuide() {
         </div>
       </section>
 
-      {/* Blog Categories */}
+      {/* --- Blog Categories --- */}
       <section>
         <h2 className="text-2xl mb-4">blog-categories</h2>
-        <BlogCategories
+        {/* <BlogCategories
           categories={allCategories}
           selected={allCategories[1]}
-        />
+        /> */}
         <pre className="p-2 font-mono text-sm">
 {`{
   "categories": ${JSON.stringify(allCategories)},
@@ -249,7 +247,7 @@ export default function StyleGuide() {
         </pre>
       </section>
 
-      {/* Bordered Panel */}
+      {/* --- Bordered Panel --- */}
       <section>
         <h2 className="text-2xl mb-4">bordered-panel</h2>
         <BorderedPanel
@@ -266,7 +264,7 @@ export default function StyleGuide() {
         </pre>
       </section>
 
-      {/* Box */}
+      {/* --- Box --- */}
       <section>
         <h2 className="text-2xl mb-4">box</h2>
         <div className="padding">
@@ -287,7 +285,7 @@ export default function StyleGuide() {
         </pre>
       </section>
 
-      {/* Character Avatar */}
+      {/* --- Character Avatar --- */}
       <section>
         <h2 className="text-2xl mb-4">character-avatar</h2>
         <div className="padding">
@@ -306,7 +304,7 @@ export default function StyleGuide() {
         </pre>
       </section>
 
-      {/* Character Callout */}
+      {/* --- Character Callout --- */}
       <section>
         <h2 className="text-2xl mb-4">character-callout</h2>
         <div className="padding">
@@ -320,7 +318,9 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-            <section>
+
+      {/* --- Character Hero --- */}
+      <section>
         <h2 className="text-2xl mb-4">character-hero</h2>
         <div className="padding">
           {/* <CharacterHero character={rexCharacter} /> */}
@@ -333,7 +333,8 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-            {/* Color Picker */}
+
+      {/* --- Color Picker --- */}
       <section>
         <h2 className="text-2xl mb-4">color-picker</h2>
         <div className="padding">
@@ -341,7 +342,7 @@ export default function StyleGuide() {
             colors={colorOptions}
             name="foo"
             variant="small"
-            visuallyHiddenLegend={true}
+            visuallyHiddenLegend
             onChange={(c) => console.log('selected', c)}
           />
         </div>
@@ -354,7 +355,8 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-            {/* Content Hero */}
+
+      {/* --- Content Hero --- */}
       <section>
         <h2 className="text-2xl mb-4">content-hero</h2>
         <div>
@@ -372,7 +374,8 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-            {/* Design Callout */}
+
+      {/* --- Design Callout --- */}
       <section>
         <h2 className="text-2xl mb-4">design-callout</h2>
         <div className="padding">
@@ -384,19 +387,34 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-            {/* Footer */}
+
+      {/* --- Footer --- */}
       <section>
         <h2 className="text-2xl mb-4">footer</h2>
         <Footer />
       </section>
-              <FormDropdown
+
+      {/* --- FormDropdown --- */}
+      <section>
+        <h2 className="text-2xl mb-4">form-dropdown</h2>
+        <FormDropdown
           label="State"
           name="state"
           options={states}
           selectedOption={state}
           onChange={setState}
         />
-              {/* Form Label */}
+        <pre className="p-2 font-mono text-sm">
+{`{
+  "label": "State",
+  "name": "state",
+  "options": ${JSON.stringify(states)},
+  "selectedOption": "${state}"
+}`}
+        </pre>
+      </section>
+
+      {/* --- Form Label --- */}
       <section>
         <h2 className="text-2xl mb-4">form-label</h2>
         <div className="padding">
@@ -409,7 +427,8 @@ export default function StyleGuide() {
 }`}
         </pre>
       </section>
-      {/* Form Success Message */}
+
+      {/* --- Form Success Message --- */}
       <section>
         <h2 className="text-2xl mb-4">form-success-message</h2>
         <div className="padding">
@@ -417,7 +436,8 @@ export default function StyleGuide() {
         </div>
         <pre className="p-2 font-mono text-sm">{`{}`}</pre>
       </section>
-             {/* Form Text Input */}
+
+      {/* --- Form Text Input --- */}
       <section>
         <h2 className="text-2xl mb-4">form-text-input</h2>
         <FormTextInput
@@ -426,35 +446,37 @@ export default function StyleGuide() {
           placeholder="you@yourname.com"
           type="email"
         />
-        <pre className="p-2 font-mono text-sm">{`{
+        <pre className="p-2 font-mono text-sm">
+{`{
   "label": "Email address",
   "name": "email-address",
   "placeholder": "you@yourname.com",
   "type": "email"
-}`}</pre>
+}`}
+        </pre>
       </section>
-      
-      {/* Form Title */}
+
+      {/* --- Form Title --- */}
       <section>
         <h2 className="text-2xl mb-4">form-title</h2>
         <FormTitle legend="Event Inquiry Form" />
-        <pre className="p-2 font-mono text-sm">{`{
-  "legend": "Event Inquiry Form"
-}`}</pre>
+        <pre className="p-2 font-mono text-sm">{`{ "legend": "Event Inquiry Form" }`}</pre>
       </section>
 
-      {/* Form Toggle Input */}
+      {/* --- Form Toggle Input --- */}
       <section>
         <h2 className="text-2xl mb-4">form-toggle-input</h2>
         <FormToggleInput name="toggle" label={longLabel} />
-        <pre className="p-2 font-mono text-sm">{`{
+        <pre className="p-2 font-mono text-sm">
+{`{
   "label": "${longLabel.replace(/\n/g, ' ')}",
   "name": "toggle",
   "type": "checkbox"
-}`}</pre>
+}`}
+        </pre>
       </section>
-      
-      {/* Form Toggle Input Group */}
+
+      {/* --- Form Toggle Input Group --- */}
       <section>
         <h2 className="text-2xl mb-4">form-toggle-input-group</h2>
         <FormToggleInputGroup
@@ -462,136 +484,133 @@ export default function StyleGuide() {
           name="toggle"
           options={oliveOptions}
         />
-        <pre className="p-2 font-mono text-sm">{`{
+        <pre className="p-2 font-mono text-sm">
+{`{
   "legend": "Do you like Olive Oil?",
   "name": "toggle",
-  "options": [
-    { "label": "Yes" },
-    { "label": "No" },
-    { "label": "It depends" }
-  ],
+  "options": ${JSON.stringify(oliveOptions)},
   "type": "radio"
-}`}</pre>
+}`}
+        </pre>
       </section>
-         {/* Home Hero */}
-   <section>
-     <h2 className="text-2xl mb-4">home-hero</h2>
-     <div className="padding">
-       <HomeHero />
-     </div>
-     <pre className="p-2 font-mono text-sm">
-       {'{}'}
-     </pre>
-   </section>
-   <IconButton iconName="star" aria-label="star" badge={2} iconClassName="size:24px" />
 
-<section>
-  <h2 className="text-2xl mb-4">product</h2>
-  <div className="padding">
-    <Product
-      colors={['black', 'gray', 'white']}
-      name="Great Microcontrollers Think Alike T-shirt"
-      price={26}
-      slug="rex-microcontrollers-tshirt"
-    />
-  </div>
-  <pre className="p-2 font-mono text-sm">
+      {/* --- Home Hero --- */}
+      <section>
+        <h2 className="text-2xl mb-4">home-hero</h2>
+        <div className="padding">
+          <HomeHero />
+        </div>
+        <pre className="p-2 font-mono text-sm">{`{}`}</pre>
+      </section>
+
+      {/* --- IconButton Demo --- */}
+      <section>
+        <h2 className="text-2xl mb-4">icon-button</h2>
+        <IconButton
+          iconName="star"
+          aria-label="star"
+          badge={2}
+          iconClassName="size:24px"
+        />
+      </section>
+
+      {/* --- Product --- */}
+      <section>
+        <h2 className="text-2xl mb-4">product</h2>
+        <div className="padding">
+          <Product slug="rex-microcontrollers-tshirt" />
+        </div>
+        <pre className="p-2 font-mono text-sm">
 {`{
-  "colors": ["black","gray","white"],
-  "name": "Great Microcontrollers Think Alike T-shirt",
-  "price": 26,
   "slug": "rex-microcontrollers-tshirt"
 }`}
-  </pre>
-</section>
+        </pre>
+      </section>
 
-{/* Promo Code */}
-<section>
-  <h2 className="text-2xl mb-4">promo-code</h2>
-  <div className="padding">
-    <PromoCode
-      content="10DISCOUNT"
-      removable
-      onRemove={() => console.log('Remove clicked')}
-    />
-  </div>
-  <pre className="p-2 font-mono text-sm">
+      {/* --- Promo Code --- */}
+      <section>
+        <h2 className="text-2xl mb-4">promo-code</h2>
+        <div className="padding">
+          <PromoCode
+            content="10DISCOUNT"
+            removable
+            onRemove={() => console.log('Remove clicked')}
+          />
+        </div>
+        <pre className="p-2 font-mono text-sm">
 {`{
   "content": "10DISCOUNT",
   "removable": true
 }`}
-  </pre>
-</section>
+        </pre>
+      </section>
 
-{/* Quantity Changer */}
-<section>
-  <h2 className="text-2xl mb-4">quantity-changer</h2>
-  <div className="padding">
-    <QuantityChanger
-      name="foo"
-      value={1}
-      onChange={(v) => console.log('New quantity', v)}
-    />
-  </div>
-  <pre className="p-2 font-mono text-sm">
+      {/* --- Quantity Changer --- */}
+      <section>
+        <h2 className="text-2xl mb-4">quantity-changer</h2>
+        <div className="padding">
+          <QuantityChanger
+            name="foo"
+            value={1}
+            onChange={(v) => console.log('New quantity', v)}
+          />
+        </div>
+        <pre className="p-2 font-mono text-sm">
 {`{
   "name": "foo"
 }`}
-  </pre>
-</section>
+        </pre>
+      </section>
 
-<section>
-  <h2 className="text-2xl mb-4">shop-hero</h2>
-  <div className="padding">
-    <ShopHero />
-  </div>
-  <pre className="p-2 font-mono text-sm">{'{}'}</pre>
-</section>
+      {/* --- Shop Hero --- */}
+      <section>
+        <h2 className="text-2xl mb-4">shop-hero</h2>
+        <div className="padding">
+          <ShopHero />
+        </div>
+        <pre className="p-2 font-mono text-sm">{`{}`}</pre>
+      </section>
 
-<section>
-  <h2 className="text-2xl mb-4">size-picker</h2>
-  <SizePickerPattern
-    name="foo"
-    sizes={{ s: 'S', m: 'M', l: 'L', xl: 'XL', xxl: 'XXL' }}
-    visuallyHiddenLegend={false}
-  />
-  <pre className="p-2 font-mono text-sm">
-    {`{
+      {/* --- Size Picker Pattern --- */}
+      <section>
+        <h2 className="text-2xl mb-4">size-picker</h2>
+        <SizePickerPattern
+          name="foo"
+          sizes={['S','M','L','XL','XXL']}
+          selectedSize={selectedSize}
+          onChange={setSelectedSize}
+        />
+        <pre className="p-2 font-mono text-sm">
+{`{
   "name": "foo",
-  "sizes": {
-    "s": "S",
-    "m": "M",
-    "l": "L",
-    "xl": "XL",
-    "xxl": "XXL"
-  },
-  "visuallyHiddenLegend": false
+  "sizes": ["S","M","L","XL","XXL"],
+  "selectedSize": "${selectedSize}"
 }`}
-  </pre>
-</section>
+        </pre>
+      </section>
 
-<section>
-  <h2 className="text-2xl mb-4">social-icon</h2>
-  <div className="padding">
-    <SocialIcon name="facebook" url="#" />
-  </div>
-  <pre className="p-2 font-mono text-sm">
+      {/* --- Social Icon --- */}
+      <section>
+        <h2 className="text-2xl mb-4">social-icon</h2>
+        <div className="padding">
+          <SocialIcon name="facebook" url="#" />
+        </div>
+        <pre className="p-2 font-mono text-sm">
 {`{
   "name": "facebook",
   "url": "#"
 }`}
-  </pre>
-</section>
+        </pre>
+      </section>
 
+      {/* --- Swatches --- */}
+      <section>
+        <h2 className="text-2xl mb-4">swatches</h2>
+        <Swatches />
+        <pre className="p-2 font-mono text-sm">{`{}`}</pre>
+      </section>
 
-<section>
-  <h2 className="text-2xl mb-4">swatches</h2>
-  <Swatches />
-  <pre className="p-2 font-mono text-sm">{'{}'}</pre>
-</section>
-
-
-      {/* SVG */}
+      {/* --- SVG --- */}
       <section>
         <h2 className="text-2xl mb-4">svg</h2>
         <div className="padding">
@@ -607,30 +626,24 @@ export default function StyleGuide() {
         </pre>
       </section>
 
-
-
-
-
-
-
-       {/* Merchandise Banner */}
-<section>
-  <h2 className="text-2xl mb-4">merchandise-banner</h2>
-  <MerchandiseBanner
-    heading="Merchandise"
-    content="Share your love of technology, and spread good cheer, with Binaryville official merchandise, including t-shirts, hats, mugs, aprons, posters, stickers, and more."
-    button={{ href: '/shop/', label: 'Visit Shop' }}
-    color="yellow"
-  />
-  <pre className="p-2 font-mono text-sm">{`{
+      {/* --- Merchandise Banner --- */}
+      <section>
+        <h2 className="text-2xl mb-4">merchandise-banner</h2>
+        <MerchandiseBanner
+          heading="Merchandise"
+          content="Share your love of technology, and spread good cheer, with Binaryville official merchandise, including t-shirts, hats, mugs, aprons, posters, stickers, and more."
+          button={{ href: '/shop/', label: 'Visit Shop' }}
+          color="yellow"
+        />
+        <pre className="p-2 font-mono text-sm">
+{`{
   "button": { "href": "/shop/", "label": "Visit Shop" },
   "color": "yellow",
   "content": "Share your love of technology, and spread good cheer, with Binaryville official merchandise, including t-shirts, hats, mugs, aprons, posters, stickers, and more.",
   "heading": "Merchandise"
-}`}</pre>
-</section>
+}`}
+        </pre>
+      </section>
     </div>
-
   )
-  
 }
