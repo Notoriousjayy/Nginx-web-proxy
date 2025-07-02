@@ -1,35 +1,10 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- … -->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>NotoriousJayy NGINX Proxy UI</title>
 </head>
 <body>
   <div id="root"></div>
-
-  <!-- SVG injector -->
-  <script>
-    (function(id,path){
-  var xhr = new XMLHttpRequest(),
-      div = document.createElement('div'),
-      body = document.body;
-  div.id = id + '-svg';
-  body.insertBefore(div, body.firstChild);
-  xhr.open('GET', path, true);
-  xhr.onload = function(){
-    div.innerHTML = xhr.responseText;
-    div.className = 'visually-hidden';
-  };
-  xhr.onerror = function(){
-    body.className += ' no-svg';
-  };
-  xhr.send();
-})(
-  'icons',
-  // absolute URL to your built sprite
-  '/images/icons.svg'
-);
-  </script>
 </body>
 </html>

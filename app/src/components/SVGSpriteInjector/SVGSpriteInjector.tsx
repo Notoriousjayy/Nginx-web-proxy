@@ -1,10 +1,11 @@
-// src/components/SVGSpriteInjector.tsx
 import { useEffect } from 'react';
+// pull in the *URL* of the built sprite, not the JS module
+import iconsUrl from '../../assets/images/icons.svg?url';
 
 export default function SVGSpriteInjector() {
   useEffect(() => {
     const id = 'icons-svg';
-    const path = '/images/icons.svg';
+    const path = iconsUrl;     // ← use the URL you just imported
     const xhr = new XMLHttpRequest();
     const div = document.createElement('div');
     document.body.insertBefore(div, document.body.firstChild);
@@ -19,5 +20,7 @@ export default function SVGSpriteInjector() {
     };
     xhr.send();
   }, []);
+
+  // nothing to render visibly
   return null;
 }
