@@ -1,22 +1,22 @@
-import React from 'react';
-import { theme } from './theme';
+import React from 'react'
+import clsx from 'clsx'
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  className?: string
+}
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, ...props }, ref) => (
     <input
       ref={ref}
       className={clsx(
-        `px-${theme.spacing.md} py-${theme.spacing.sm} border border-gray-300 focus:outline-none focus:ring-2 focus:ring-${theme.colors.primary} ${theme.radii.sm}`,
+        // base styles; tweak to match your theme
+        'px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500',
         className
       )}
       {...props}
     />
   )
-);
-Input.displayName = 'Input';
-function clsx(arg0: string, className: string | undefined): string | undefined {
-    throw new Error('Function not implemented.');
-}
+)
 
+Input.displayName = 'Input'
