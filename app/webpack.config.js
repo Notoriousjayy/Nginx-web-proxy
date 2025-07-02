@@ -11,20 +11,25 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.[contenthash].js',
+    publicPath: '/',      // so "/images/…" resolves at runtime
     clean: true,
   },
 
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+    alias: {
+      // now css url("/images/foo.png") → src/assets/images/foo.png
+      '/images': path.resolve(__dirname, 'src/assets/images'),
+    },
   },
 
   module: {
     rules: [
-      // 1) SVGR: import SVG as ReactComponent (exclude ?url)
+      // 1) SVGs as React components (svgr), unless you append ?url
       {
         test: /\.svg$/i,
         issuer: /\.[jt]sx?$/,
-        resourceQuery: { not: [/url/] }, // exclude imports ending in ?url
+        resourceQuery: { not: [/url/] },
         use: [
           {
             loader: '@svgr/webpack',
@@ -33,33 +38,51 @@ module.exports = {
         ],
       },
 
-      // 2) SVG as URL: import foo.svg?url
+      // 2) SVGs imported with ?url → asset/resource
       {
         test: /\.svg$/i,
-        resourceQuery: /url/, 
+        resourceQuery: /url/,
         type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]',
+        },
       },
 
-      // 3) Images (PNG, JPG, GIF)
+      // 3) Raster images → asset/resource
       {
         test: /\.(png|jpe?g|gif)$/i,
         type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]',
+        },
       },
 
-      // 4) Fonts & other assets
+      // 4) Fonts
       {
         test: /\.(woff2?|eot|ttf|otf)$/i,
         type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name][ext]',
+        },
       },
 
-      // 5) CSS (Tailwind / PostCSS)
+      // 5) CSS + Tailwind
       {
         test: /\.css$/i,
-        include: [path.resolve(__dirname, 'style')],
+        include: path.resolve(__dirname, 'src'),
         use: [
-          'style-loader',    // injects CSS into the DOM
-          'css-loader',      // resolves @import, url()
-          'postcss-loader',  // runs Tailwind & autoprefixer (per postcss.config.js)
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+              url: {
+                // leave any /images/... URL untouched
+                filter: (url) => url.startsWith('/images/') === false,
+              },
+            },
+          },
+          'postcss-loader',
         ],
       },
 
@@ -85,7 +108,7 @@ module.exports = {
   devServer: {
     static: {
       directory: path.resolve(__dirname, 'dist'),
-      publicPath: './',
+      publicPath: '/',
     },
     historyApiFallback: true,
     open: true,

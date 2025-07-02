@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[740],{3740:(e,n,s)=>{s.r(n),s.d(n,{CheckoutSuccessPage:()=>r});var c=s(4848);const r=()=>(0,c.jsx)("div",{children:"Thank you! Your order has been placed."})}}]);
+//# sourceMappingURL=bundle.0e7b448880c9777e1f47.js.map

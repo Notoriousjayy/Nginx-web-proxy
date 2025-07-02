@@ -1,1 +1,0 @@
-{"version":3,"file":"main.470b80ad87e0467b58e3.js","mappings":"2JAEe,SAASA,IAAc,OAAO,2CAA0B,C","sources":["webpack://nginx-web-proxy/./src/pages/Errors/Forbidden.tsx"],"sourcesContent":["// src/pages/Errors/Forbidden.tsx\r\nimport React from 'react';\r\nexport default function Forbidden() { return <h1>403 — Forbidden</h1>; }"],"names":["Forbidden"],"sourceRoot":""}

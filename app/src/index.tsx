@@ -1,29 +1,26 @@
-// app/src/index.tsx
-import '../style/index.css'; // ← import your global CSS (Tailwind, etc.)
+// import the one and only index.css in src/
+import './index.css'
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-import { AuthProvider } from './contexts/AuthContext';
-import '../style/index.css';
-import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-// If you're targeting older browsers, you might need to import a polyfill for fetch, etc.
-// import 'core-js/stable';
-// import 'regenerator-runtime/runtime';
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import Header from './layouts/Header';
+import App from './App'
+import  {Footer}  from './layouts/Footer';
+import './assets/images/icons.svg';
+import SVGSpriteInjector from './components/SVGSpriteInjector/SVGSpriteInjector'
 
-const container = document.getElementById('root');
-if (!container) {
-  throw new Error('Failed to find the root element');
-}
+const container = document.getElementById('root')
+if (!container) throw new Error('Failed to find the root element')
 
-const root = createRoot(container);
+const root = createRoot(container)
 root.render(
   <React.StrictMode>
-    <AuthProvider>
+    <SVGSpriteInjector />
       <BrowserRouter>
-      <App />
-      </BrowserRouter>
-    </AuthProvider>
+        <Header />
+        <App />
+        <Footer/>
+      </BrowserRouter> 
   </React.StrictMode>
-);
+)

@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[318],{7318:(e,n,r)=>{r.r(n),r.d(n,{default:()=>i});var u=r(4848);function i(){return(0,u.jsx)("h1",{children:"403 — Forbidden"})}}}]);
+//# sourceMappingURL=bundle.d74c1f61cfafe86eef34.js.map

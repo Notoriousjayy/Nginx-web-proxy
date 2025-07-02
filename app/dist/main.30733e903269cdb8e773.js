@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[779],{779:(e,n,r)=>{r.r(n),r.d(n,{CartPage:()=>c});var s=r(848);const c=()=>(0,s.jsx)("div",{children:"Your cart contents go here"})}}]);
-//# sourceMappingURL=main.30733e903269cdb8e773.js.map
