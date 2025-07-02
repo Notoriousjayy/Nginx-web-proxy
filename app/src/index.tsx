@@ -7,7 +7,6 @@ import { BrowserRouter } from 'react-router-dom'
 import Header from './layouts/Header';
 import App from './App'
 import  {Footer}  from './layouts/Footer';
-import './assets/images/icons.svg';
 import SVGSpriteInjector from './components/SVGSpriteInjector/SVGSpriteInjector'
 
 const container = document.getElementById('root')

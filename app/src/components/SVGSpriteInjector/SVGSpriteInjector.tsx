@@ -1,35 +1,43 @@
-// src/components/SVGSpriteInjector.tsx
-import { useEffect } from 'react';
+// src/components/SVGSpriteInjector/SVGSpriteInjector.tsx
+import React, { useEffect } from 'react'
 // pull in the *URL* of the built sprite, not the JS module
-import iconsUrl from '../../assets/images/icons.svg?url';
-import { IconButton } from '../../components/IconButton';
+import iconsUrl from '../../assets/images/icons.svg?url'
 
-export default function SVGSpriteInjector() {
+const SPRITE_ID = 'svg-sprite'
+
+const SVGSpriteInjector: React.FC = () => {
   useEffect(() => {
-    const SPRITE_ID = IconButton.name;
+    // already injected?
+    if (document.getElementById(SPRITE_ID)) return
 
-    // if we've already injected once, do nothing
-    if (document.getElementById(SPRITE_ID)) {
-      return;
-    }
+    fetch(iconsUrl)
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load sprite: ${res.status}`)
+        return res.text()
+      })
+      .then(svgText => {
+        const container = document.createElement('div')
+        container.id = SPRITE_ID
+        container.setAttribute('aria-hidden', 'true')
 
-    // create a placeholder DIV at the top of <body>
-    const div = document.createElement('div');
-    document.body.insertBefore(div, document.body.firstChild);
+        container.style.position = 'absolute'
+        container.style.width    = '0'
+        container.style.height   = '0'
+        container.style.overflow = 'hidden'
 
-    // fetch and inline the sprite
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', iconsUrl, true);
-    xhr.onload = () => {
-      div.id = SPRITE_ID;
-      div.innerHTML = xhr.responseText;
-      div.className = 'visually-hidden';
-    };
-    xhr.onerror = () => {
-      document.body.classList.add('no-svg');
-    };
-    xhr.send();
-  }, []);
+        container.classList.add('visually-hidden')
+        container.innerHTML = svgText
 
-  return null;
+        const rootEl = document.getElementById('root')
+        if (rootEl) document.body.insertBefore(container, rootEl)
+      })
+      .catch(err => {
+        console.warn('SVG sprite injection failed:', err)
+        document.body.classList.add('no-svg')
+      })
+  }, [])
+
+  return null
 }
+
+export default SVGSpriteInjector
