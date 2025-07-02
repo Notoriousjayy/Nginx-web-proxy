@@ -4,7 +4,9 @@ import './index.css'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import Header from './layouts/Header';
 import App from './App'
+import  {Footer}  from './layouts/Footer';
 import './assets/images/icons.svg';
 import SVGSpriteInjector from './components/SVGSpriteInjector/SVGSpriteInjector'
 
@@ -14,9 +16,11 @@ if (!container) throw new Error('Failed to find the root element')
 const root = createRoot(container)
 root.render(
   <React.StrictMode>
-      <BrowserRouter>
     <SVGSpriteInjector />
+      <BrowserRouter>
+        <Header />
         <App />
+        <Footer/>
       </BrowserRouter>
   </React.StrictMode>
 )

@@ -323,7 +323,7 @@ export default function StyleGuide() {
             <section>
         <h2 className="text-2xl mb-4">character-hero</h2>
         <div className="padding">
-          <CharacterHero character={rexCharacter} />
+          {/* <CharacterHero character={rexCharacter} /> */}
         </div>
         <pre className="p-2 font-mono text-sm">
 {`{

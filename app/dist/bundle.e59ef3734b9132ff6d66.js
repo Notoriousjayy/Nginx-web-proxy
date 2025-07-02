@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[984],{8984:(r,e,n)=>{n.r(e),n.d(e,{default:()=>s});var u=n(4848);function s(){return(0,u.jsx)("h1",{children:"500 — Server Error"})}}}]);
+//# sourceMappingURL=bundle.e59ef3734b9132ff6d66.js.map

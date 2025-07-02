@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[936],{7936:(e,n,i)=>{i.r(n),i.d(n,{CheckoutFieldsPage:()=>p});var s=i(4848);const p=()=>(0,s.jsx)("div",{children:"Checkout — step 2: enter shipping & billing info"})}}]);
+//# sourceMappingURL=bundle.adeaebb567e51dd85184.js.map

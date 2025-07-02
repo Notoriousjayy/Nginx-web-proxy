@@ -9,8 +9,6 @@ import { Footer }   from '../../layouts/Footer'
 const AboutPage: React.FC = () => {
   return (
     <>
-      <Header />
-
       <main style={aboutStyles} className="px-8 py-12 max-w-container mx-auto">
         {/* Page title */}
         <H2 heading="Our Story"/>
@@ -29,8 +27,6 @@ const AboutPage: React.FC = () => {
           (Well, nothing plus 1.) Visit Binaryville and let your imagination soar!
         </p>
       </main>
-
-      <Footer />
     </>
   )
 }
