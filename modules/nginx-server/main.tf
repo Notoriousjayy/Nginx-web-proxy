@@ -29,23 +29,45 @@ module "vm" {
 
   user_data = base64encode(join("\n", [
     "#!/bin/bash",
-    "set -e",
+    "set -euxo pipefail",
 
+    "# --- 1) System prerequisites & Docker ----------------------------------",
     "apt-get update -y",
-    "apt-get install -y awscli nginx",
+    "apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release",
+    "apt-get install -y docker.io awscli nginx",
+    "systemctl enable docker && systemctl start docker",
 
-    "# Sync static assets from S3",
-    "aws s3 sync s3://${var.assets_s3_bucket}/${var.assets_s3_prefix}/ /var/www/html/",
+    "usermod -aG docker admin || true",
 
-    "# Write out the Nginx config",
-    "cat << 'EOF' > /etc/nginx/nginx.conf",
+    "# --- 2) Install kubectl via Debian APT repo -----------------------------",
+    "mkdir -p /etc/apt/keyrings",
+    "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg",
+    "chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg",
+    "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list",
+    "chmod 644 /etc/apt/sources.list.d/kubernetes.list",
+    "apt-get update -y",
+    "apt-get install -y kubectl",
+
+    "# --- 3) Install Minikube ------------------------------------------------",
+    "apt-get install -y conntrack",
+    "curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb",
+    "dpkg -i minikube_latest_amd64.deb",
+    "rm minikube_latest_amd64.deb",
+
+    "# --- 4) Non-root docker user --------------------------------------------",
+    "useradd -m -s /bin/bash kube || true",
+    "usermod -aG docker kube || true",
+
+    "# --- 5) Pull static files from S3 (non-fatal) ---------------------------",
+    "aws s3 sync s3://${var.assets_s3_bucket}/${var.assets_s3_prefix}/ /var/www/html/ || echo \"[WARNING] S3 sync failed, continuing without static assets.\"",
+
+    "# --- 6) Write the nginx.conf we templated in Terraform ------------------",
+    "cat > /etc/nginx/nginx.conf <<'EOF'",
     data.template_file.nginx_conf.rendered,
     "EOF",
 
-    "# Ensure correct permissions",
+    "# --- 7) Permissions & service restart -----------------------------------",
     "chown -R www-data:www-data /var/www/html",
-
-    "# Enable & restart Nginx",
     "systemctl enable nginx",
     "systemctl restart nginx"
   ]))

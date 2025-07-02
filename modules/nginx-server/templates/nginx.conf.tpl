@@ -1,28 +1,31 @@
 user  www-data;
 worker_processes  auto;
-pid        /run/nginx.pid;
 
-events {
-    worker_connections  1024;
-}
+events { worker_connections 1024; }
 
 http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
 
-    sendfile            on;
-    keepalive_timeout   65;
+  sendfile       on;
+  keepalive_timeout 65;
 
-    server {
-        listen       80 default_server;
-        listen       [::]:80 default_server;
-        server_name  _;
+  ##
+  ##  Single-Page-App server block
+  ##
+  server {
+    listen 80 default_server;
+    server_name _;                 # any host
 
-        root   /var/www/html;
-        index  index.html index.htm;
+    root  /var/www/html;
+    index index.html;
 
-        location / {
-            try_files $uri $uri/ =404;
-        }
+    # Support client-side routing (React-Router, etc.)
+    location / {
+      try_files $uri $uri/ /index.html;
     }
+
+    # Reduce 403 risk on directories
+    autoindex off;
+  }
 }
