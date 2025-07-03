@@ -1,0 +1,63 @@
+# Default values for react-app.
+
+appName: react-app
+imageName: jordansuber/react-app
+
+# TODO rename
+serviceName: react-app
+sourcePort: 80
+
+replicaCount: 3
+
+image:
+  repository: jordansuber/my-react-app
+  pullPolicy: IfNotPresent
+  tag: "0.0.1"
+
+# Service configuration
+service:
+  type: NodePort
+  port: 3000
+  targetPort: 3000
+
+
+# Ingress configuration
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: react-app.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+
+# Probes to check container health
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+# Resource requests & limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Node/pod scheduling
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
