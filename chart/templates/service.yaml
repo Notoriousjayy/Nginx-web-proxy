@@ -1,17 +1,16 @@
+# chart/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
+  name: {{ .Values.serviceName }}
   labels:
     app: {{ .Values.appName }}
-  name: {{ .Values.serviceName }}
 spec:
+  type: {{ .Values.service.type }}
   ports:
-  - name: 3000-3000
-    port: {{ .Values.sourcePort }}
-    protocol: TCP
-    targetPort: {{ .Values.sourcePort }}
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
   selector:
     app: {{ .Values.appName }}
-  type: ClusterIP
-status:
-  loadBalancer: {}

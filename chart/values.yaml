@@ -1,11 +1,6 @@
-# Default values for react-app.
-
+# chart/values.yaml
 appName: react-app
-imageName: jordansuber/react-app
-
-# TODO rename
 serviceName: react-app
-sourcePort: 80
 
 replicaCount: 3
 
@@ -14,14 +9,11 @@ image:
   pullPolicy: IfNotPresent
   tag: "0.0.1"
 
-# Service configuration
 service:
   type: NodePort
   port: 3000
   targetPort: 3000
 
-
-# Ingress configuration
 ingress:
   enabled: false
   annotations: {}
@@ -31,31 +23,26 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
 
-# Probes to check container health
-livenessProbe:
-  httpGet:
-    path: /
-    port: 80
-  initialDelaySeconds: 30
-  periodSeconds: 10
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"
 
 readinessProbe:
   httpGet:
     path: /
-    port: 80
   initialDelaySeconds: 5
   periodSeconds: 5
 
-# Resource requests & limits
-resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  limits:
-    cpu: 200m
-    memory: 256Mi
+livenessProbe:
+  httpGet:
+    path: /
+  initialDelaySeconds: 30
+  periodSeconds: 10
 
-# Node/pod scheduling
 nodeSelector: {}
 
 tolerations: []
