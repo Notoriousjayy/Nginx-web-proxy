@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.appName }}
+  labels:
+    app: {{ .Values.appName }}
+  annotations:
+    # tell K8s which controller should handle this (e.g. nginx-ingress)
+    kubernetes.io/ingress.class: "nginx"
+    # if you ever do path-based routing, this rewrites all traffic to “/”
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  # tls:                            # optional TLS block
+  #   - hosts:
+  #       - {{ .Values.appName }}.example.com
+  #     secretName: {{ .Values.appName }}-tls   # your cert-secret here
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix       # Prefix so it matches all subpaths
+            backend:
+              service:
+                name: {{ .Values.appName }}
+                port:
+                  number: {{ .Values.sourcePort }}

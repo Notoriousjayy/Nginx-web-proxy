@@ -1,94 +1,144 @@
-# NotoriousJayy NGINX Web Proxy
+# NotoriousJayy • NGINX Web Proxy Mono-Repo
 
-A Terraform-based AWS mono-repo that provisions an NGINX web proxy backed by S3 (for static assets) and a React+TypeScript+Webpack UI. Ideal for teams who want an end-to-end IaC CI/CD setup for serving and managing static web apps.
+Terraform-driven AWS infrastructure + a React 19 Single-Page App (SPA) served by
+NGINX.  Everything lives in one repo so you can bootstrap cloud resources,
+build the UI, and publish it to S3/CloudFront (or a Kubernetes cluster) from a
+single CI/CD pipeline.
 
-## Usage/Examples
+---
 
+## ✨ Features
 
-### 1) Bootstrap your remote state bucket (once per account)
+| Layer | What you get | Source |
+|-------|--------------|--------|
+| **IaC** | Re-usable Terraform modules & per-env compositions (VPC, S3, EC2 + NGINX) | `modules/*`, `environments/*` :contentReference[oaicite:0]{index=0} |
+| **App** | TypeScript + React 19 + Tailwind + Webpack 5 scaffold | `app/` :contentReference[oaicite:1]{index=1} |
+| **Docker** | Multi-stage image that compiles the SPA then serves it with NGINX | `Dockerfile` :contentReference[oaicite:2]{index=2} |
+| **Helm chart** | Optional K8s deployment for the same container | `chart/` (Chart v2)  |
+| **CI/CD** | GitHub Actions workflow that builds, syncs to S3 and (optionally) invalidates CloudFront | `.github/workflows/deploy.yml` :contentReference[oaicite:3]{index=3} |
+| **Helper script** | `scripts/deploy.sh` = one-liner build → S3 → remote NGINX refresh | `scripts/deploy.sh` :contentReference[oaicite:4]{index=4} |
+
+---
+
+## 🖥️ Quick start (dev)
+
 ```bash
+# 0 · Pre-reqs: Terraform >=1.7, AWS CLI, Node 18, Git
+
+git clone https://github.com/your-org/notoriousjayy-nginx-web-proxy.git
+cd notoriousjayy-nginx-web-proxy
+
+# 1 · Bootstrap remote state (once per AWS account)
 cd bootstrap
-bash ../environments/dev/bootstrap-backend.sh
-```
+bash ../environments/dev/bootstrap-backend.sh           # creates/validates tf-state bucket
+cd ..
 
-### 2) Deploy the dev environment
-```bash
-cd ../environments/dev
+# 2 · Provision dev infra
+cd environments/dev
+cp terraform.tfvars.example terraform.tfvars            # edit region, subnets, key pair…
 terraform init
-terraform fmt
-terraform validate
-terraform plan
 terraform apply --auto-approve
-```
+cd ../..
 
-### 3) Build & deploy the React UI
-```bash
-cd ../../app
+# 3 · Compile the React UI
+cd app
 npm ci
 npm run build
 ```
 
-### 4) Sync built assets to S3
-```bash
-BUCKET=$(terraform -chdir=../environments/dev output -raw assets_bucket_name)
-aws s3 sync dist/ s3://$BUCKET/ --delete --acl bucket-owner-full-control
+The SPA is now on S3 and fronted by an EC2/NGINX instance whose Elastic IP
+is printed by:
+```terraform
+terraform -chdir=environments/dev output nginx_eip
 ```
 
-## Installation
+---
 
-Install the UI dependencies:
+## 🚀 One-command deploy (CI)
+Push to `main` → GitHub Actions triggers the Build & Deploy to S3 workflow,
+which:
 
-```bash
-cd app
-npm install
-```
+Checks out code & installs Node deps
 
-Prepare Terraform:
+Builds the SPA (`npm run build`)
 
-```bash
-cd environments/dev
-cp terraform.tfvars.example terraform.tfvars
-# → edit terraform.tfvars with your values (region, subnets, keys…)
-terraform init
-```
+Assumes your deploy role & syncs `app/dist/ → s3://<assets_bucket>`
 
-## Deployment
+Optionally invalidates CloudFront for cache-busting 
 
-To deploy the full stack (infrastructure + UI) in one command, use the provided GitHub Actions workflow:
+Set these **repository secrets**:
 
-```bash
-# Push to main → triggers .github/workflows/deploy.yml
-git push origin main
-```
+| Secret                                        | Used by            |
+| --------------------------------------------- | ------------------ |
+| `AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY` | bucket sync        |
+| `AWS_REGION` (defaults to `us-east-2`)        | bucket sync        |
+| `CLOUDFRONT_DIST_ID`                          | cache invalidation |
 
-Or run manually:
+
+---
+
+## 🐳 Run locally with Docker
 
 ```bash
-# Deploy infra
-cd environments/dev
-terraform apply --auto-approve
+# build the same image the pipeline uses
+docker build -t nginx-web-proxy:dev .
 
-# Deploy UI
-cd ../../app
-npm run build
-npm run deploy     # syncs to S3 & invalidates CloudFront
+# run it on http://localhost:3000
+docker run --rm -p 3000:3000 nginx-web-proxy:dev
 ```
 
-## Environment Variables
+The image is produced by a multi-stage Dockerfile that compiles the UI then
+copies /dist into the NGINX base image 
 
-The following variables must be set in your shell or CI environment:
+---
+
+## ☸️ Deploy to Kubernetes (optional)
+
+If you already run a cluster, package the image with a Helm chart located in
+`chart/`:
 
 ```bash
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_REGION=us-east-2
-CLOUDFRONT_DIST_ID    # for cache invalidation
+helm upgrade --install react-app ./chart \
+  --set image.repository=<your ECR repo> \
+  --set image.tag=<semantic-tag>
 ```
 
-And copy/fill the Terraform example:
+The chart ships sane defaults: three replicas, NodePort 3000, and an Ingress
+stub you can enable when you have a controller.
+
+
+---
+
+## 🗺️ Repository layout
+```
+.
+├── app/                 # React 19 + Webpack + Tailwind SPA
+├── bootstrap/           # remote-state S3 bucket
+├── environments/        # dev / (staging) / (prod) Terraform roots
+├── modules/             # reusable Terraform modules (vpc, ec2, s3, nginx)
+├── chart/               # Helm v3 chart (Kubernetes deployment of SPA)
+├── scripts/deploy.sh    # zero-downtime S3 → EC2 sync helper
+└── .github/workflows/   # CI/CD pipelines
+```
+
+---
+
+## 🔧 Helper scripts
+
+* **`scripts/deploy.sh`** — local “build + S3 sync + remote NGINX refresh”
+  wrapper; great for quick fixes outside CI..
+* **`app/setup-app-structure.sh`** — scaffolds missing pages/components during
+  early prototyping.
+
+---
+
+## 🛠️ Configuration
+
+### Terraform variables
+
+Copy & edit `environments/dev/terraform.tfvars.example`:
 
 ```hcl
-# environments/dev/terraform.tfvars
 aws_region         = "us-east-2"
 vpc_cidr           = "10.0.0.0/16"
 public_subnets     = ["10.0.1.0/24"]
@@ -96,45 +146,34 @@ availability_zones = ["us-east-1a"]
 instance_type      = "t3.micro"
 instance_name      = "my-nginx-proxy"
 key_name           = "my-ssh-key"
+``` 
+
+### Environment variables (local & CI)
+
+```
+AWS_ACCESS_KEY_ID # IAM user/role with S3 + EC2 + CloudFront perms
+AWS_SECRET_ACCESS_KEY
+AWS_REGION=us-east-2
+CLOUDFRONT_DIST_ID # only if you enable invalidation
 ```
 
-## Run Locally
+---
 
-Clone and spin up the UI in development mode:
+## 🧪 Local development
 
 ```bash
-git clone https://github.com/your-org/notoriousjayy-nginx-web-proxy.git
-cd notoriousjayy-nginx-web-proxy/app
-npm install
-npm start
+cd app
+npm start                    # webpack-dev-server on http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Hot-reload, TypeScript, ESLint and Tailwind JIT are pre-wired.
 
-## API Reference
+---
 
-Terraform outputs serve as the “API” for this repo:
+## 🧹 Tear down (dev)
 
-#### List all outputs
-
-```bash
-terraform -chdir=environments/dev output
-```
-
-| Output Key              | Description                                  |
-| :---------------------- | :------------------------------------------- |
-| `nginx_eip`             | Elastic IP of the NGINX proxy                |
-| `assets_bucket_name`    | S3 bucket name where built assets are stored |
-| `bootstrap_bucket_name` | Name of the shared Terraform state bucket    |
-
-#### Get a single output
+Destroy all dev resources once you’re done:
 
 ```bash
-terraform -chdir=environments/dev output nginx_eip
-```
-
-Export all outputs as JSON:
-
-```bash
-terraform -chdir=environments/dev output -json > outputs.json
+terraform -chdir=environments/dev destroy
 ```

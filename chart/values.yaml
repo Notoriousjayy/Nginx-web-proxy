@@ -1,0 +1,50 @@
+# chart/values.yaml
+appName: react-app
+serviceName: react-app
+
+replicaCount: 3
+
+image:
+  repository: jordansuber/my-react-app
+  pullPolicy: IfNotPresent
+  tag: "0.0.1"
+
+service:
+  type: NodePort
+  port: 3000
+  targetPort: 3000
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: react-app.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"
+
+readinessProbe:
+  httpGet:
+    path: /
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+livenessProbe:
+  httpGet:
+    path: /
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
