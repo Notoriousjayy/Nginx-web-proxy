@@ -1,0 +1,41 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: eks-provisioner
+  region: us-east-1
+  version: "1.33"            # EKS control-plane version
+
+# enable IAM OIDC for IRSA, attach policies to service accounts if needed
+iam:
+  withOIDC: true
+
+# turn on deeper control-plane logging
+cloudWatch:
+  clusterLogging:
+    enableTypes:
+      - api
+      - audit
+      - authenticator
+      - controllerManager
+      - scheduler
+
+nodeGroups:
+  - name: ng-standard
+    instanceType: t3.medium    # modest baseline nodes
+    desiredCapacity: 2
+    minSize: 2                 # autoscaling floor
+    maxSize: 4                 # autoscaling ceiling
+    volumeSize: 50             # root EBS in GiB
+    # ssh:
+    #   allow: true
+    #   publicKeyName: your-ssh-key-name
+    labels:
+      role: worker
+    tags:
+      Project: eks-provisioner
+    iam:
+      attachPolicyARNs:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+    privateNetworking: true    # nodes in private subnets

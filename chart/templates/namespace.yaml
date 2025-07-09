@@ -1,20 +1,9 @@
+{{- if .Values.createNamespace }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: development
+  name: {{ .Values.namespace }}
   labels:
-    environment: development
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: testing
-  labels:
-    environment: testing
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: production
-  labels:
-    environment: production
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+{{- end }}

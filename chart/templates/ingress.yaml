@@ -1,28 +1,31 @@
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Values.appName }}
+  name: {{ include "react-app.fullname" . }}-ingress
   labels:
-    app: {{ .Values.appName }}
+    {{- include "react-app.labels" . | nindent 4 }}
   annotations:
-    # tell K8s which controller should handle this (e.g. nginx-ingress)
-    kubernetes.io/ingress.class: "nginx"
-    # if you ever do path-based routing, this rewrites all traffic to “/”
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
-  ingressClassName: nginx
-  # tls:                            # optional TLS block
-  #   - hosts:
-  #       - {{ .Values.appName }}.example.com
-  #     secretName: {{ .Values.appName }}-tls   # your cert-secret here
+  ingressClassName: {{ .Values.ingress.className }}
   rules:
-    - host: localhost
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host }}
       http:
         paths:
-          - path: /
-            pathType: Prefix       # Prefix so it matches all subpaths
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ .Values.appName }}
+                name: {{ include "react-app.fullname" $ }}
                 port:
-                  number: {{ .Values.sourcePort }}
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+    {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+{{- end }}

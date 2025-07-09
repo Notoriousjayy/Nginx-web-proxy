@@ -2,19 +2,23 @@ apiVersion: v2
 name: react-app
 description: A Helm chart for deploying the React application served by NGINX
 type: application
-version: 0.1.0            # Chart version (semver)
-deprecated: false
-appVersion: "0.0.1"       # Should match your Docker image tag (jordansuber/my-react-app:0.0.1)
-kubeVersion: ">=1.16.0"   # Minimum Kubernetes version supported
-
+version: 0.2.0
+appVersion: "0.0.2"
+kubeVersion: ">=1.16.0"
+home: https://github.com/your-org/notoriousjayy-nginx-web-proxy
+sources:
+  - https://github.com/your-org/notoriousjayy-nginx-web-proxy
+icon: https://raw.githubusercontent.com/your-org/notoriousjayy-nginx-web-proxy/main/logo.png
+keywords:
+  - react
+  - nginx
+  - spa
+  - helm
 maintainers:
   - name: Jordan Suber
     email: you@example.com
-
-# icon: https://raw.githubusercontent.com/facebook/react/main/fixtures/website/public/react-logo.svg
-
-# Uncomment and fill in if you have dependencies
-# dependencies:
-#   - name: nginx
-#     version: 1.0.0
-#     repository: https://charts.bitnami.com/bitnami
+dependencies:
+  # Uncomment and fill in if you pull in other charts:
+  # - name: nginx
+  #   version: 8.x.x
+  #   repository: https://charts.bitnami.com/bitnami

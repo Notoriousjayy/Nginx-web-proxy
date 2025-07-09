@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunknginx_web_proxy=self.webpackChunknginx_web_proxy||[]).push([[507],{7507:(e,r,c)=>{c.r(r),c.d(r,{CheckoutPage:()=>s});var n=c(4848);const s=()=>(0,n.jsx)("div",{children:"Checkout — step 1: review your cart"})}}]);
-//# sourceMappingURL=bundle.8ac82f293f617dbed704.js.map
