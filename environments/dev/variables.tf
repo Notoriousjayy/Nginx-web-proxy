@@ -63,3 +63,18 @@ variable "tags" {
     ManagedBy   = "terraform"
   }
 }
+
+variable "eks_cluster_name" {
+  description = "Name of the EKS cluster to target"
+  type        = string
+}
+
+variable "image_repo" {
+  description = "Remote Docker image repository (e.g. public.ecr.aws/my-org/my-app)"
+  type        = string
+}
+
+variable "image_tag" {
+  description = "Docker image tag to deploy"
+  type        = string
+}
