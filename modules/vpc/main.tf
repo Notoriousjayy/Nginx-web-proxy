@@ -14,9 +14,14 @@ resource "aws_subnet" "public" {
   cidr_block        = var.public_subnets[count.index]
   map_public_ip_on_launch = true
   availability_zone = var.availability_zones[count.index]
-  tags = {
-    Name = "${var.name}-public-${count.index}"
-  }
+  tags = merge(
+    {
+      Name = "${var.name}-public-${count.index}"
+      # TAG FOR K8S CONTROL PLANE (must match your cluster name exactly)
+      "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
+  },
+  var.tags
+  )
 }
 
 resource "aws_internet_gateway" "this" {

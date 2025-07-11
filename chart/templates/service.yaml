@@ -1,20 +1,21 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "react-app.fullname" . }}
+  name: {{ .Values.serviceName }}
   labels:
-    {{- include "react-app.labels" . | nindent 4 }}
+    {{ include "react-app.labels" . | nindent 4 }}
   annotations:
     {{- toYaml .Values.service.annotations | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   selector:
-    {{- include "react-app.selectorLabels" . | nindent 4 }}
+    {{ include "react-app.selectorLabels" . | nindent 4 }}
   ports:
-    {{- toYaml .Values.service.ports | nindent 4 }}
+    {{- range .Values.service.ports }}
+    - name: {{ .name }}
+      protocol: {{ default "TCP" .protocol }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+    {{- end }}
   sessionAffinity: {{ .Values.service.sessionAffinity }}
-  {{- if .Values.service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges:
-    {{- toYaml .Values.service.loadBalancerSourceRanges | nindent 4 }}
-  {{- end }}

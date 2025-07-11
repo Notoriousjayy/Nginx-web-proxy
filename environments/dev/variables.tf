@@ -37,3 +37,20 @@ variable "assets_s3_bucket"   { type = string }
 variable "assets_s3_prefix"   { type = string }
 variable "image_repo"         { type = string }
 variable "image_tag"          { type = string }
+
+variable "cluster_name" {
+  description = "The exact name of your EKS cluster (used by the VPC module to tag subnets)"
+  type        = string
+}
+
+variable "tags" {
+  description = "Additional tags to apply to VPC subnets"
+  type        = map(string)
+  default     = {}
+}
+
+
+variable "name" {
+  description = "Name tag prefix for all VPC resources"
+  type        = string
+}

@@ -46,10 +46,12 @@ provider "aws" {
 
 module "vpc" {
   source             = "../../modules/vpc"
-  name               = "eks-vpc"
+  name               = var.name
   cidr_block         = var.vpc_cidr
   public_subnets     = var.public_subnets
   availability_zones = var.availability_zones
+  eks_cluster_name    = var.cluster_name
+  tags                = var.tags
 }
 
 module "eks" {
