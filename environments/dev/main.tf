@@ -50,8 +50,8 @@ module "vpc" {
   cidr_block         = var.vpc_cidr
   public_subnets     = var.public_subnets
   availability_zones = var.availability_zones
-  eks_cluster_name    = var.cluster_name
-  tags                = var.tags
+  eks_cluster_name   = var.cluster_name
+  tags               = var.tags
 }
 
 module "eks" {
@@ -101,6 +101,8 @@ module "eks" {
     }
   }
 
+  # ── no extra access_entries block ──────────────────────────────────────────
+
   tags = {
     Environment = var.environment
     ManagedBy   = "terraform"
@@ -111,3 +113,19 @@ data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_name
 }
 
+resource "kubernetes_cluster_role_binding" "administrators" {
+  metadata {
+    name = "administrators-binding"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-admin"
+  }
+
+  subject {
+    kind = "Group"
+    name = "administrators"
+  }
+}
