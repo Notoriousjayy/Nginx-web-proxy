@@ -4,7 +4,7 @@ description: A Helm chart for deploying the React application served by NGINX
 type: application
 version: 0.2.0
 appVersion: "0.0.2"
-kubeVersion: ">=1.16.0"
+# kubeVersion: ">=1.30.0 <1.33.0"
 home: https://github.com/your-org/notoriousjayy-nginx-web-proxy
 sources:
   - https://github.com/your-org/notoriousjayy-nginx-web-proxy
@@ -16,8 +16,8 @@ keywords:
   - helm
 maintainers:
   - name: Jordan Suber
-    email: you@example.com
-dependencies:
+    email: jordansuber@gmail.com
+# dependencies:
   # Uncomment and fill in if you pull in other charts:
   # - name: nginx
   #   version: 8.x.x

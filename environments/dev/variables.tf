@@ -1,80 +1,39 @@
 variable "aws_region" {
-  type        = string
   description = "AWS region"
-}
-
-variable "availability_zones" {
-  type        = list(string)
-  description = "Availability zones for your subnets"
+  type        = string
+  default     = "us-east-1"
 }
 
 variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
   type        = string
-  description = "CIDR block for dev VPC"
+  default     = "10.0.0.0/16"
 }
 
 variable "public_subnets" {
+  description = "List of public subnet CIDR blocks"
   type        = list(string)
-  description = "Public subnet CIDRs"
+  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 }
 
-variable "instance_type" {
-  type        = string
-  description = "EC2 instance type"
-}
-
-variable "key_name" {
-  type        = string
-  description = "Name of the existing AWS key pair"
-}
-
-variable "ssh_ingress_cidr" {
-  type        = string
-  description = "CIDR block allowed to SSH in (e.g. your office IP/32)"
-  default     = "0.0.0.0/0"
+variable "availability_zones" {
+  description = "List of AZs for the VPC"
+  type        = list(string)
+  default     = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
 variable "environment" {
+  description = "Deployment environment (e.g. dev, staging, prod)"
   type        = string
-  description = "Deployment environment"
   default     = "dev"
 }
 
-variable "zone_name" {
-  type        = string
-  description = "DNS zone name (only needed if you use Route53 or other DNS integrations)"
-}
-
-variable "bootstrap_bucket" {
-  description = "Name of the S3 bucket that stores the bootstrap state"
-  type        = string
-}
-
-variable "bootstrap_bucket_region" {
-  description = "Region where the bootstrap state bucket lives"
-  type        = string
-}
-
-variable "tags" {
-  description = "Common tags to apply to all dev resources"
-  type        = map(string)
-  default     = {
-    Environment = "dev"
-    ManagedBy   = "terraform"
-  }
-}
-
-variable "eks_cluster_name" {
-  description = "Name of the EKS cluster to target"
-  type        = string
-}
-
-variable "image_repo" {
-  description = "Remote Docker image repository (e.g. public.ecr.aws/my-org/my-app)"
-  type        = string
-}
-
-variable "image_tag" {
-  description = "Docker image tag to deploy"
-  type        = string
-}
+variable "eks_cluster_name"   { type = string }
+variable "instance_type"      { type = string }
+variable "key_name"           { type = string }
+variable "zone_name"          { type = string }
+variable "ssh_ingress_cidr"   { type = string }
+variable "assets_s3_bucket"   { type = string }
+variable "assets_s3_prefix"   { type = string }
+variable "image_repo"         { type = string }
+variable "image_tag"          { type = string }
