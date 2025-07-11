@@ -14,8 +14,8 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
 
 image:
-  repository: jordansuber/my-react-app
-  tag: "0.0.2"
+  repository: 866934333672.dkr.ecr.us-east-1.amazonaws.com/jordansuber/react-app
+  tag: "latest"
   pullPolicy: IfNotPresent
 
 service:
@@ -33,11 +33,12 @@ service:
   loadBalancerSourceRanges: []
 
 ingress:
-  enabled: false
-  annotations: {}
-  className: nginx
+  enabled: true
+  ingressClassName: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
   hosts:
-    - host: react-app.local
+    - host: react.mycompany.com
       paths:
         - path: /
           pathType: Prefix
