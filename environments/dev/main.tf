@@ -101,8 +101,6 @@ module "eks" {
     }
   }
 
-  # ── no extra access_entries block ──────────────────────────────────────────
-
   tags = {
     Environment = var.environment
     ManagedBy   = "terraform"
