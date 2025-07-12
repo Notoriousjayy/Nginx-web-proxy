@@ -1,0 +1,7 @@
+# ignore Terraform files
+*.tf
+*.hcl
+
+# ignore scripts or binary providers
+*.sh
+terraform-provider-*

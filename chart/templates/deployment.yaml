@@ -1,12 +1,13 @@
+{{- $fullName := include "react-app.fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "react-app.fullname" . }}
+  name: {{ $fullName }}
   labels:
-    {{- include "react-app.labels" . | nindent 4 }}
+    {{ include "react-app.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  revisionHistoryLimit: 2
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -14,11 +15,11 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      {{- include "react-app.selectorLabels" . | nindent 6 }}
+      {{ include "react-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "react-app.selectorLabels" . | nindent 8 }}
+        {{ include "react-app.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -31,7 +32,7 @@ spec:
       affinity:
         {{- toYaml .Values.affinity | nindent 8 }}
       containers:
-        - name: {{ .Values.appName }}
+        - name: {{ include "react-app.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

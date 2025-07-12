@@ -1,3 +1,5 @@
+# values.yaml — drop-in replacement
+
 # Whether to create the namespace or rely on --namespace
 createNamespace: false
 namespace: default
@@ -6,6 +8,7 @@ appName: react-app
 serviceName: react-app
 
 replicaCount: 3
+revisionHistoryLimit: 2
 
 autoscaling:
   enabled: false
@@ -13,72 +16,72 @@ autoscaling:
   maxReplicas: 5
   targetCPUUtilizationPercentage: 80
 
+# If your ECR repo is private, make sure you have:
+# kubectl create secret generic ecr-regcred \
+#   --type=kubernetes.io/dockerconfigjson \
+#   --from-file=.dockerconfigjson=/path/to/.docker/config.json
+imagePullSecrets:
+  - name: ecr-regcred
+
 image:
-  repository: jordansuber/my-react-app
-  tag: "0.0.2"
+  repository: 866934333672.dkr.ecr.us-east-1.amazonaws.com/jordansuber/react-app
+  tag: "0.0.3"
   pullPolicy: IfNotPresent
 
 service:
   type: NodePort
-  port: 3000
-  targetPort: 3000
+  port: 8080
+  targetPort: 8080
   externalTrafficPolicy: Cluster
+  sessionAffinity: None
+  loadBalancerSourceRanges: []
   annotations: {}
   ports:
     - name: http
-      port: 3000
-      targetPort: 3000
       protocol: TCP
-  sessionAffinity: None
-  loadBalancerSourceRanges: []
+      port: 8080
+      targetPort: 8080
 
-ingress:
+# Optional ConfigMap mount
+configMap:
   enabled: false
-  annotations: {}
-  className: nginx
-  hosts:
-    - host: react-app.local
-      paths:
-        - path: /
-          pathType: Prefix
-  tls: []
+  name: ""
+  mountPath: "/etc/config"
 
-resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  limits:
-    cpu: 200m
-    memory: 256Mi
-
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 5
-  periodSeconds: 5
-
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 30
-  periodSeconds: 10
+# Optional Secret mount
+secret:
+  enabled: false
+  name: ""
+  mountPath: "/etc/secret"
 
 nodeSelector: {}
 tolerations: []
 affinity: {}
 
-# Optional ConfigMap/Secret injection
-configMap:
-  enabled: false
-  name: ""
-  data: {}
+readinessProbe:
+  httpGet:
+    path: /
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
 
-secret:
-  enabled: false
-  name: ""
-  data: {}
+livenessProbe:
+  httpGet:
+    path: /
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 30
 
-# For private registries
-imagePullSecrets: []
+ingress:
+  enabled: true
+  ingressClassName: alb
+  annotations:
+    kubernetes.io/ingress.class: "alb"
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+  hosts:
+    paths:
+      - path: /
+        pathType: Prefix
+  tls: []
