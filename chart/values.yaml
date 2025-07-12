@@ -1,3 +1,5 @@
+# values.yaml — drop-in replacement
+
 # Whether to create the namespace or rely on --namespace
 createNamespace: false
 namespace: default
@@ -24,14 +26,14 @@ service:
   port: 3000
   targetPort: 3000
   externalTrafficPolicy: Cluster
+  sessionAffinity: None
+  loadBalancerSourceRanges: []
   annotations: {}
   ports:
     - name: http
+      protocol: TCP
       port: 3000
       targetPort: 3000
-      protocol: TCP
-  sessionAffinity: None
-  loadBalancerSourceRanges: []
 
 # Optional ConfigMap mount
 configMap:
@@ -70,11 +72,16 @@ ingress:
     kubernetes.io/ingress.class: "alb"
     alb.ingress.kubernetes.io/scheme: "internet-facing"
     alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    # Uncomment and set your subnets or security groups if needed:
     # alb.ingress.kubernetes.io/subnets: "subnet-0bb1c79de3ac67c8b,subnet-064f7f4b8a9b0cde1"
     # alb.ingress.kubernetes.io/security-groups: "sg-0f8e9d7c6b5a43210"
-    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
   hosts:
+    - host: react-app.example.com   # ← replace with your actual domain
       paths:
         - path: /
           pathType: Prefix
-  tls: []
+  tls: []                              # e.g.:
+                                       # - hosts:
+                                       #     - react-app.example.com
+                                       #   secretName: react-app-tls

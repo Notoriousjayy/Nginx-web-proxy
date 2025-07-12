@@ -14,11 +14,11 @@ spec:
   ingressClassName: {{ .Values.ingress.ingressClassName }}
   rules:
     {{- range .Values.ingress.hosts }}
-    - host: {{ .host }}
+    - host: {{ .host | quote }}
       http:
         paths:
           {{- range .paths }}
-          - path: {{ .path }}
+          - path: {{ .path | quote }}
             pathType: {{ .pathType }}
             backend:
               service:
@@ -32,9 +32,9 @@ spec:
     {{- range .Values.ingress.tls }}
     - hosts:
         {{- range .hosts }}
-        - {{ . }}
+        - {{ . | quote }}
         {{- end }}
-      secretName: {{ .secretName }}
+      secretName: {{ .secretName | quote }}
     {{- end }}
   {{- end }}
 {{- end }}
