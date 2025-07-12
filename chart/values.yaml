@@ -70,11 +70,10 @@ ingress:
     kubernetes.io/ingress.class: "alb"
     alb.ingress.kubernetes.io/scheme: "internet-facing"
     alb.ingress.kubernetes.io/target-type: "ip"
-    alb.ingress.kubernetes.io/subnets: "subnet-0bb1c79de3ac67c8b,subnet-064f7f4b8a9b0cde1"
-    alb.ingress.kubernetes.io/security-groups: "sg-0f8e9d7c6b5a43210"
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    # alb.ingress.kubernetes.io/subnets: "subnet-0bb1c79de3ac67c8b,subnet-064f7f4b8a9b0cde1"
+    # alb.ingress.kubernetes.io/security-groups: "sg-0f8e9d7c6b5a43210"
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
   hosts:
-    - host: react.mycompany.com
       paths:
         - path: /
           pathType: Prefix
