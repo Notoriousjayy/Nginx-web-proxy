@@ -31,7 +31,6 @@ variable "environment" {
 variable "eks_cluster_name"   { type = string }
 variable "instance_type"      { type = string }
 variable "key_name"           { type = string }
-variable "zone_name"          { type = string }
 variable "ssh_ingress_cidr"   { type = string }
 variable "assets_s3_bucket"   { type = string }
 variable "assets_s3_prefix"   { type = string }
@@ -52,5 +51,15 @@ variable "tags" {
 
 variable "name" {
   description = "Name tag prefix for all VPC resources"
+  type        = string
+}
+
+variable "grafana_admin_password" {
+  description = "Initial Grafana admin password"
+  type        = string
+}
+
+variable "zone_name" {
+  description = "Base DNS zone (e.g. example.com) – used for ALB host rules"
   type        = string
 }
