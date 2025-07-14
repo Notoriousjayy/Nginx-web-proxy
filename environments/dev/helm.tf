@@ -29,3 +29,28 @@ provider "helm" {
     }
   }
 }
+
+
+resource "helm_release" "react_app" {
+  name       = "react-app"
+  namespace  = "default"
+
+  # path.module == /…/Nginx-web-proxy/environments/dev
+  # ../../chart → /…/Nginx-web-proxy/chart
+  chart = "${path.module}/../../chart"
+
+  set = [
+    {
+      name  = "image.repository"
+      value = "866934333672.dkr.ecr.us-east-1.amazonaws.com/jordansuber/react-app"
+    },
+    {
+      name  = "image.tag"
+      value = "0.0.3"
+    },
+    {
+      name  = "service.type"
+      value = "LoadBalancer"
+    },
+  ]
+}

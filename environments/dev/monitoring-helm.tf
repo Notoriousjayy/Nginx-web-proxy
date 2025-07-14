@@ -15,42 +15,67 @@ resource "helm_release" "kube_prometheus_stack" {
   # === Minimal opinionated overrides ===
   values = [
     yamlencode({
-      fullnameOverride = "kps"          # short names (<63 chars)
+      fullnameOverride = "kps"
 
-      # For small hobby clusters – scrape every 30 s, keep 15 d of data
+      # Prometheus core settings (unchanged)
       prometheus = {
         prometheusSpec = {
-          retention = "15d"
-          scrapeInterval = "30s"
-
-          # Store TSDB on an EBS gp3 volume; match ALB controller pattern
+          retention       = "15d"
+          scrapeInterval  = "30s"
           storageSpec = {
             volumeClaimTemplate = {
               spec = {
                 accessModes = ["ReadWriteOnce"]
-                resources   = { requests = { storage = "30Gi" } }
+                resources   = {
+                  requests = {
+                    storage = "30Gi"
+                  }
+                }
               }
             }
           }
         }
+        # Expose Prometheus via ALB Ingress (HTTP-only)
+        ingress = {
+          enabled          = true
+          ingressClassName = "alb"
+          hosts            = ["prometheus.${var.zone_name}"]
+          annotations = {
+            "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
+            "alb.ingress.kubernetes.io/target-type"  = "ip"
+            "alb.ingress.kubernetes.io/listen-ports" = jsonencode([{ HTTP = 80 }])
+          }
+        }
       }
 
-      # Expose Grafana via ALB Ingress
+      # Grafana Ingress (HTTP-only)
       grafana = {
         ingress = {
-          enabled = true
+          enabled          = true
           ingressClassName = "alb"
           hosts            = ["grafana.${var.zone_name}"]
           annotations = {
-            "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
-            "alb.ingress.kubernetes.io/target-type" = "ip"
+            "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
+            "alb.ingress.kubernetes.io/target-type"  = "ip"
+            "alb.ingress.kubernetes.io/listen-ports" = jsonencode([{ HTTP = 80 }])
           }
         }
-        adminPassword = var.grafana_admin_password  # put in TF-vars or AWS SM
+        adminPassword = var.grafana_admin_password
+      }
+
+      # Alertmanager Ingress (optional)
+      alertmanager = {
+        ingress = {
+          enabled          = true
+          ingressClassName = "alb"
+          hosts            = ["alertmanager.${var.zone_name}"]
+          annotations = {
+            "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
+            "alb.ingress.kubernetes.io/target-type"  = "ip"
+            "alb.ingress.kubernetes.io/listen-ports" = jsonencode([{ HTTP = 80 }])
+          }
+        }
       }
     })
   ]
-
-  # Helm provider already knows how to talk to the cluster (see helm.tf)
-  depends_on = [module.eks]
 }

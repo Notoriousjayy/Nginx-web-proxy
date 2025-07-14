@@ -63,3 +63,18 @@ variable "zone_name" {
   description = "Base DNS zone (e.g. example.com) – used for ALB host rules"
   type        = string
 }
+
+variable "app_image_repository" {
+  description = "Docker repo for the React app"
+  type        = string
+}
+
+variable "app_image_tag" {
+  description = "Docker image tag for the React app"
+  type        = string
+}
+
+variable "app_ingress_host" {
+  description = "Hostname to expose the React app"
+  type        = string
+}
