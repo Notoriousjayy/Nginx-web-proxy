@@ -1,5 +1,5 @@
 ################################################################################
-# kube-prometheus-stack  – ALL monitoring UIs on the same ALB
+# kube-prometheus-stack – ALL monitoring UIs on the same ALB (path-based)
 ################################################################################
 resource "helm_release" "kube_prometheus_stack" {
   name             = "kube-prometheus-stack"
@@ -32,15 +32,14 @@ resource "helm_release" "kube_prometheus_stack" {
         adminPassword = var.grafana_admin_password
 
         ingress = {
-          enabled   = true
-          hosts     = []               # no Host match – path alone
-          paths     = ["/grafana"]
+          enabled     = true
+          hosts       = []               # path-only match
+          paths       = ["/grafana"]
           annotations = {
             "alb.ingress.kubernetes.io/group.order" = "10"
           }
         }
 
-        # <— here’s the fix: quote the key so it becomes a YAML map key “grafana.ini”
         "grafana.ini" = {
           server = {
             root_url            = "%(protocol)s://%(domain)s/grafana"
@@ -68,30 +67,31 @@ resource "helm_release" "kube_prometheus_stack" {
         }
 
         ingress = {
-          enabled   = true
-          hosts     = []
-          paths     = ["/prometheus"]
+          enabled     = true
+          hosts       = []               # path-only match
+          paths       = ["/prometheus"]
           annotations = {
             "alb.ingress.kubernetes.io/group.order" = "20"
           }
         }
       }
 
-      # ──────────────────────── Alertmanager  (/alertmanager) ────────────────────
+      # ─────────────────────── Alertmanager  (/alertmanager) ────────────────────
       alertmanager = {
         alertmanagerSpec = {
           routePrefix = "/alertmanager"
         }
 
         ingress = {
-          enabled   = true
-          hosts     = []
-          paths     = ["/alertmanager"]
+          enabled     = true
+          hosts       = []               # path-only match
+          paths       = ["/alertmanager"]
           annotations = {
             "alb.ingress.kubernetes.io/group.order" = "30"
           }
         }
       }
+
     })
   ]
 }
