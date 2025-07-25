@@ -1,97 +1,89 @@
-################################################################################
-# kube-prometheus-stack – ALL monitoring UIs on the same ALB (path-based)
-################################################################################
 resource "helm_release" "kube_prometheus_stack" {
   name             = "kube-prometheus-stack"
   repository       = "https://prometheus-community.github.io/helm-charts"
   chart            = "kube-prometheus-stack"
-  version          = "60.2.0"   # ← matches appVersion 0.73
+  version          = "60.2.0"          # pin to your needed version
 
   namespace        = "monitoring"
   create_namespace = true
 
-  values = [
-    yamlencode({
+  # Disable *all* built‑in ingresses so we don't hit the template bug
+  values = [yamlencode({
+    grafana = { ingress = { enabled = false } }
+    prometheus = { ingress = { enabled = false } }
+    alertmanager = { ingress = { enabled = false } }
 
-      # ────────────────────────────────────────────────────────────────────────────
-      #  Global ALB settings shared by *all* monitoring ingresses
-      # ────────────────────────────────────────────────────────────────────────────
-      global = {
-        ingress = {
-          annotations = {
-            "alb.ingress.kubernetes.io/group.name"   = "monitoring"
-            "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":80}]"
-            "alb.ingress.kubernetes.io/target-type"  = "ip"
-            "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
-          }
+    # (Optional) any other overrides you still want:
+    prometheus = {
+      prometheusSpec = {
+        retention      = "15d"
+        scrapeInterval = "30s"
+        externalUrl    = "https://monitoring.example.com/prometheus"
+        routePrefix    = "/prometheus"
+      }
+    }
+
+    grafana = {
+      adminPassword = var.grafana_admin_password
+      "grafana.ini" = {
+        server = {
+          root_url            = "https://monitoring.example.com/grafana"
+          serve_from_sub_path = true
         }
       }
+    }
+  })]
+}
 
-      # ─────────────────────────── Grafana  (/grafana) ───────────────────────────
-      grafana = {
-        adminPassword = var.grafana_admin_password
+resource "kubernetes_ingress_v1" "monitoring_ui" {
+  metadata {
+    name      = "monitoring-ui"
+    namespace = "monitoring"
+    annotations = {
+      "kubernetes.io/ingress.class"            = "alb"
+      "alb.ingress.kubernetes.io/group.name"   = "monitoring"
+      "alb.ingress.kubernetes.io/group.order"  = "1"
+      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":80}]"
+      "alb.ingress.kubernetes.io/target-type"  = "ip"
+      "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
+    }
+  }
 
-        ingress = {
-          enabled     = true
-          hosts       = []               # path-only match
-          paths       = ["/grafana"]
-          annotations = {
-            "alb.ingress.kubernetes.io/group.order" = "10"
-          }
-        }
-
-        "grafana.ini" = {
-          server = {
-            root_url            = "%(protocol)s://%(domain)s/grafana"
-            serve_from_sub_path = "true"
-          }
-        }
-      }
-
-      # ───────────────────────── Prometheus  (/prometheus) ───────────────────────
-      prometheus = {
-        prometheusSpec = {
-          retention      = "15d"
-          scrapeInterval = "30s"
-          routePrefix    = "/prometheus"
-          storageSpec = {
-            volumeClaimTemplate = {
-              spec = {
-                accessModes = ["ReadWriteOnce"]
-                resources = {
-                  requests = { storage = "30Gi" }
-                }
-              }
+  spec {
+    ingress_class_name = "alb"
+    rule {
+      http {
+        path {
+          path      = "/grafana"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "kube-prometheus-stack-grafana"
+              port { number = 80 }
             }
           }
         }
-
-        ingress = {
-          enabled     = true
-          hosts       = []               # path-only match
-          paths       = ["/prometheus"]
-          annotations = {
-            "alb.ingress.kubernetes.io/group.order" = "20"
+        path {
+          path      = "/prometheus"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "kube-prometheus-stack-prometheus"
+              port { number = 9090 }
+            }
+          }
+        }
+        path {
+          path      = "/alertmanager"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "kube-prometheus-stack-alertmanager"
+              port { number = 9093 }
+            }
           }
         }
       }
-
-      # ─────────────────────── Alertmanager  (/alertmanager) ────────────────────
-      alertmanager = {
-        alertmanagerSpec = {
-          routePrefix = "/alertmanager"
-        }
-
-        ingress = {
-          enabled     = true
-          hosts       = []               # path-only match
-          paths       = ["/alertmanager"]
-          annotations = {
-            "alb.ingress.kubernetes.io/group.order" = "30"
-          }
-        }
-      }
-
-    })
-  ]
+    }
+  }
 }

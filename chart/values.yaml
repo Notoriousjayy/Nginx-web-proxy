@@ -44,11 +44,11 @@ ingress:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
     alb.ingress.kubernetes.io/group.name: monitoring
-    alb.ingress.kubernetes.io/group.order: "01"
-  hosts:        # hostless – uses path “/”
+    alb.ingress.kubernetes.io/group.order: "99"          # lowered priority
+  hosts:
     paths:
       - path: /
-        pathType: Prefix
+        pathType: Exact                                 # exact "/" only
   tls: []
 
 # ─────────────── Probes ───────────────
