@@ -1,60 +1,88 @@
+############################################
+# 1. Ensure monitoring namespace exists
+############################################
+resource "kubernetes_namespace" "monitoring" {
+  metadata {
+    name = "monitoring"
+  }
+}
+
+############################################
+# 2. Deploy kube-prometheus-stack without built‑in ingresses
+############################################
 resource "helm_release" "kube_prometheus_stack" {
   name             = "kube-prometheus-stack"
   repository       = "https://prometheus-community.github.io/helm-charts"
   chart            = "kube-prometheus-stack"
-  version          = "60.2.0"          # pin to your needed version
+  version          = "60.2.0"
+  namespace        = kubernetes_namespace.monitoring.metadata[0].name
+  create_namespace = false
 
-  namespace        = "monitoring"
-  create_namespace = true
-
-  # Disable *all* built‑in ingresses so we don't hit the template bug
   values = [yamlencode({
-    grafana = { ingress = { enabled = false } }
-    prometheus = { ingress = { enabled = false } }
-    alertmanager = { ingress = { enabled = false } }
-
-    # (Optional) any other overrides you still want:
-    prometheus = {
-      prometheusSpec = {
-        retention      = "15d"
-        scrapeInterval = "30s"
-        externalUrl    = "https://monitoring.example.com/prometheus"
-        routePrefix    = "/prometheus"
-      }
-    }
-
     grafana = {
-      adminPassword = var.grafana_admin_password
-      "grafana.ini" = {
-        server = {
-          root_url            = "https://monitoring.example.com/grafana"
-          serve_from_sub_path = true
-        }
-      }
+      ingress = { enabled = false }
+      service = { type = "ClusterIP" }
+    }
+    prometheus = {
+      ingress = { enabled = false }
+      service = { type = "ClusterIP" }
+    }
+    alertmanager = {
+      ingress = { enabled = false }
+      service = { type = "ClusterIP" }
     }
   })]
 }
 
-resource "kubernetes_ingress_v1" "monitoring_ui" {
+############################################
+# 3. Security Group for internal Prometheus ALB
+############################################
+resource "aws_security_group" "prometheus_internal_alb" {
+  name        = "prometheus-internal-alb"
+  description = "Internal ALB for Prometheus"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.prometheus_allowed_cidrs
+    description = "Allow HTTP from trusted networks"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound"
+  }
+
+  tags = {
+    Name = "prometheus-internal-alb"
+  }
+}
+
+############################################
+# 4. Grafana ‑ public‑facing ALB Ingress (HTTP 3000)
+############################################
+resource "kubernetes_ingress_v1" "grafana_public" {
   metadata {
-    name      = "monitoring-ui"
-    namespace = "monitoring"
+    name      = "grafana-public"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
     annotations = {
       "kubernetes.io/ingress.class"            = "alb"
-      "alb.ingress.kubernetes.io/group.name"   = "monitoring"
-      "alb.ingress.kubernetes.io/group.order"  = "1"
-      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":80}]"
-      "alb.ingress.kubernetes.io/target-type"  = "ip"
       "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"  = "ip"
+      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":3000}]"
     }
   }
 
   spec {
-    ingress_class_name = "alb"
     rule {
       http {
         path {
-          path      = "/grafana"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {
@@ -63,23 +91,39 @@ resource "kubernetes_ingress_v1" "monitoring_ui" {
             }
           }
         }
+      }
+    }
+  }
+}
+
+############################################
+# 5. Prometheus ‑ internal‑only ALB Ingress (HTTP 9090)
+############################################
+resource "kubernetes_ingress_v1" "prometheus_internal" {
+  depends_on = [aws_security_group.prometheus_internal_alb]
+
+  metadata {
+    name      = "prometheus-internal"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+    annotations = {
+      "kubernetes.io/ingress.class"               = "alb"
+      "alb.ingress.kubernetes.io/scheme"          = "internal"
+      "alb.ingress.kubernetes.io/target-type"     = "ip"
+      "alb.ingress.kubernetes.io/listen-ports"    = "[{\"HTTP\":9090}]"
+      "alb.ingress.kubernetes.io/security-groups" = aws_security_group.prometheus_internal_alb.id
+    }
+  }
+
+  spec {
+    rule {
+      http {
         path {
-          path      = "/prometheus"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {
               name = "kube-prometheus-stack-prometheus"
               port { number = 9090 }
-            }
-          }
-        }
-        path {
-          path      = "/alertmanager"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = "kube-prometheus-stack-alertmanager"
-              port { number = 9093 }
             }
           }
         }

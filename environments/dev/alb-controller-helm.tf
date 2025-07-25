@@ -1,27 +1,15 @@
 ############################################
-# alb-controller-helm.tf
+# Install AWS Load Balancer Controller via Helm
 ############################################
 
-# 1) Apply the ALB Controller CRDs from local file
+# (1) Apply ALB Controller CRDs
 resource "null_resource" "aws_lb_controller_crds" {
-  # re-run if the CRD file ever changes
   triggers = {
     sha = filesha256("${path.module}/aws-load-balancer-crds.yaml")
   }
-
-  # provisioner "local-exec" {
-  #   interpreter = ["/bin/bash", "-c"]
-  #   command     = <<-EOT
-  #     # ensure kubeconfig is up-to-date
-  #     aws eks update-kubeconfig --name ${var.eks_cluster_name} --region ${var.aws_region}
-
-  #     # apply CRDs without validation against schema that may not yet exist
-  #     kubectl apply --validate=false -f ${path.module}/aws-load-balancer-crds.yaml
-  #   EOT
-  # }
 }
 
-# 2) Install (or upgrade) the AWS Load Balancer Controller itself
+# (2) Helm release for the controller
 resource "helm_release" "aws_load_balancer_controller" {
   name             = "aws-load-balancer-controller"
   repository       = "https://aws.github.io/eks-charts"
@@ -30,26 +18,25 @@ resource "helm_release" "aws_load_balancer_controller" {
   namespace        = "kube-system"
   create_namespace = false
 
-  # Wait for the controller pods & webhook Service to be ready
   wait    = true
   timeout = 600
-
-  values = [
-    yamlencode({
-      clusterName  = var.eks_cluster_name
-      region       = var.aws_region
-      vpcId        = module.vpc.vpc_id
-      ingressClass = "alb"
-      serviceAccount = {
-        create = false
-        name   = kubernetes_service_account.lbc.metadata[0].name
-      }
-    })
-  ]
 
   depends_on = [
     null_resource.aws_lb_controller_crds,
     kubernetes_service_account.lbc,
     aws_iam_role_policy_attachment.lbc,
+  ]
+
+  values = [
+    yamlencode({
+      clusterName    = var.eks_cluster_name
+      serviceAccount = {
+        create = false
+        name   = kubernetes_service_account.lbc.metadata[0].name
+      }
+      region       = var.aws_region
+      vpcId        = module.vpc.vpc_id
+      ingressClass = "alb"
+    })
   ]
 }
