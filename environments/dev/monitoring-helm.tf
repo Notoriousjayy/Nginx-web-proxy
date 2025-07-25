@@ -18,6 +18,11 @@ resource "helm_release" "kube_prometheus_stack" {
   namespace        = kubernetes_namespace.monitoring.metadata[0].name
   create_namespace = false
 
+  # ← ensure AWS LB Controller is ready before deploying Prometheus
+  depends_on = [
+    helm_release.aws_load_balancer_controller
+  ]
+
   values = [yamlencode({
     grafana = {
       ingress = { enabled = false }
