@@ -9,6 +9,7 @@ provider "kubernetes" {
     args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name,
                    "--region", var.aws_region]
   }
+  
 }
 
 provider "helm" {

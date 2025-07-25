@@ -48,7 +48,7 @@ ingress:
   hosts:
     paths:
       - path: /
-        pathType: Exact                                 # exact "/" only
+        pathType: Prefix                                    # exact "/" only
   tls: []
 
 # ─────────────── Probes ───────────────

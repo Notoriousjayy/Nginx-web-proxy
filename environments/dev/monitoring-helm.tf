@@ -69,7 +69,7 @@ resource "aws_security_group" "prometheus_internal_alb" {
 }
 
 ############################################
-# 4. Grafana ‑ public‑facing ALB Ingress (HTTP 3000)
+# 4. Grafana ‑ public‑facing ALB Ingress (HTTP 80)
 ############################################
 resource "kubernetes_ingress_v1" "grafana_public" {
   metadata {
@@ -79,7 +79,7 @@ resource "kubernetes_ingress_v1" "grafana_public" {
       "kubernetes.io/ingress.class"            = "alb"
       "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"  = "ip"
-      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":3000}]"
+      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":80}]"
     }
   }
 
