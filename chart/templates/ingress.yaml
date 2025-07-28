@@ -7,15 +7,17 @@ metadata:
     app.kubernetes.io/name: {{ include "react-app.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
-    {{- range $key, $value := .Values.ingress.annotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
   ingressClassName: {{ .Values.ingress.ingressClassName }}
   rules:
-    - http:
+{{- range .Values.ingress.hosts }}
+    - {{- if .host }}
+      host: {{ .host | quote }}
+      {{- end }}
+      http:
         paths:
-          {{- range .Values.ingress.hosts.paths }}
+{{- range .paths }}
           - path: {{ .path | quote }}
             pathType: {{ .pathType }}
             backend:
@@ -23,15 +25,16 @@ spec:
                 name: {{ $.Values.serviceName }}
                 port:
                   number: {{ $.Values.service.port }}
-          {{- end }}
-  {{- if .Values.ingress.tls }}
+{{- end }}
+{{- end }}
+{{- if .Values.ingress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+{{- range .Values.ingress.tls }}
     - hosts:
-        {{- range .hosts }}
+{{- range .hosts }}
         - {{ . | quote }}
-        {{- end }}
+{{- end }}
       secretName: {{ .secretName | quote }}
-    {{- end }}
-  {{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
