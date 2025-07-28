@@ -47,7 +47,7 @@ resource "helm_release" "react_app" {
         }
         hosts = [
           {
-            host = "app.${var.zone_name}"
+            host = ""
             paths = [
               {
                 path     = "/"
