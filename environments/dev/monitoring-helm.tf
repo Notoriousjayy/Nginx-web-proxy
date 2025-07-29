@@ -112,7 +112,7 @@ resource "kubernetes_ingress_v1" "prometheus_internal" {
     namespace = kubernetes_namespace.monitoring.metadata[0].name
     annotations = {
       "kubernetes.io/ingress.class"               = "alb"
-      "alb.ingress.kubernetes.io/scheme"          = "internal"
+      "alb.ingress.kubernetes.io/scheme"          = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"     = "ip"
       "alb.ingress.kubernetes.io/listen-ports"    = "[{\"HTTP\":80}]"
       "alb.ingress.kubernetes.io/security-groups" = aws_security_group.prometheus_internal_alb.id
