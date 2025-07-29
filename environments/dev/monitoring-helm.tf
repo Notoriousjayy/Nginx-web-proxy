@@ -114,7 +114,7 @@ resource "kubernetes_ingress_v1" "prometheus_internal" {
       "kubernetes.io/ingress.class"               = "alb"
       "alb.ingress.kubernetes.io/scheme"          = "internal"
       "alb.ingress.kubernetes.io/target-type"     = "ip"
-      "alb.ingress.kubernetes.io/listen-ports"    = "[{\"HTTP\":9090}]"
+      "alb.ingress.kubernetes.io/listen-ports"    = "[{\"HTTP\":80}]"
       "alb.ingress.kubernetes.io/security-groups" = aws_security_group.prometheus_internal_alb.id
     }
   }
