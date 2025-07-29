@@ -90,9 +90,9 @@ variable "prometheus_domain" {
 }
 
 variable "prometheus_allowed_cidrs" {
-  description = "CIDR blocks allowed to reach the internal Prometheus ALB."
+  description = "CIDRs allowed to reach the public Prometheus ALB (HTTP 80)"
   type        = list(string)
-  default     = ["0.0.0.0/32"]
+  default     = ["0.0.0.0/0"]
 }
 
 variable "private_zone_name" {
