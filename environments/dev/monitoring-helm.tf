@@ -128,7 +128,7 @@ resource "kubernetes_ingress_v1" "prometheus_internal" {
           backend {
             service {
               name = "kube-prometheus-stack-prometheus"
-              port { number = 9090 }
+              port { number = 80 }
             }
           }
         }

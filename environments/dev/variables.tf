@@ -53,10 +53,10 @@ variable "name" {
   type        = string
 }
 
-variable "grafana_admin_password" {
-  description = "Initial Grafana admin password"
-  type        = string
-}
+# variable "grafana_admin_password" {
+#   description = "Initial Grafana admin password"
+#   type        = string
+# }
 
 variable "zone_name" {
   description = "Public Route53 base DNS zone (e.g. example.com)"
