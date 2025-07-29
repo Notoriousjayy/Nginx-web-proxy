@@ -40,11 +40,11 @@ resource "helm_release" "kube_prometheus_stack" {
 }
 
 ############################################
-# 3. Security Group for internal Prometheus ALB
+# 3. Security Group for Prometheus ALB (public)
 ############################################
 resource "aws_security_group" "prometheus_internal_alb" {
   name        = "prometheus-internal-alb"
-  description = "Internal ALB for Prometheus"
+  description = "Public ALB for Prometheus"
   vpc_id      = module.vpc.vpc_id
 
   ingress {
@@ -69,13 +69,13 @@ resource "aws_security_group" "prometheus_internal_alb" {
 }
 
 ############################################
-# 4. Grafana ‑ public‑facing ALB Ingress (HTTP 80)
+# 4. Grafana ‑ public‑facing ALB Ingress (HTTP 80)
 ############################################
 resource "kubernetes_ingress_v1" "grafana_public" {
   metadata {
     name      = "grafana-public"
     namespace = kubernetes_namespace.monitoring.metadata[0].name
-    annotations = {
+  annotations = {
       "kubernetes.io/ingress.class"            = "alb"
       "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"  = "ip"
@@ -102,7 +102,7 @@ resource "kubernetes_ingress_v1" "grafana_public" {
 }
 
 ############################################
-# 5. Prometheus ‑ internal‑only ALB Ingress (HTTP 9090)
+# 5. Prometheus ‑ public ALB Ingress (HTTP -> 9090)
 ############################################
 resource "kubernetes_ingress_v1" "prometheus_internal" {
   depends_on = [aws_security_group.prometheus_internal_alb]
@@ -116,7 +116,6 @@ resource "kubernetes_ingress_v1" "prometheus_internal" {
       "alb.ingress.kubernetes.io/target-type"     = "ip"
       "alb.ingress.kubernetes.io/listen-ports"    = "[{\"HTTP\":80}]"
       "alb.ingress.kubernetes.io/security-groups" = aws_security_group.prometheus_internal_alb.id
-
       "alb.ingress.kubernetes.io/healthcheck-port" = "traffic-port"
       "alb.ingress.kubernetes.io/healthcheck-path" = "/-/healthy"
     }
@@ -138,4 +137,26 @@ resource "kubernetes_ingress_v1" "prometheus_internal" {
       }
     }
   }
+}
+
+############################################
+# 6. (Step B) Allow Prometheus ALB -> EKS node SG on 9090
+#    Required because target-type=ip sends traffic to pod IPs
+#    enforced by the node ENI security group.
+#    If your EKS module name differs, replace `module.eks`
+#    with the correct module reference that exposes node_security_group_id.
+############################################
+resource "aws_security_group_rule" "allow_prom_alb_to_nodes_9090" {
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 9090
+  to_port                  = 9090
+
+  # EKS worker node security group (from your EKS module)
+  security_group_id        = module.eks.node_security_group_id
+
+  # Source is the Prometheus ALB security group defined above
+  source_security_group_id = aws_security_group.prometheus_internal_alb.id
+
+  description              = "Allow Prometheus ALB to reach pods on 9090 via node ENIs"
 }
