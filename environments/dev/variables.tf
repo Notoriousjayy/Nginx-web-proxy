@@ -53,10 +53,10 @@ variable "name" {
   type        = string
 }
 
-# variable "grafana_admin_password" {
-#   description = "Initial Grafana admin password"
-#   type        = string
-# }
+variable "grafana_admin_password" {
+  description = "Initial Grafana admin password"
+  type        = string
+}
 
 variable "zone_name" {
   description = "Public Route53 base DNS zone (e.g. example.com)"
@@ -92,7 +92,7 @@ variable "prometheus_domain" {
 variable "prometheus_allowed_cidrs" {
   description = "CIDR blocks allowed to reach the internal Prometheus ALB."
   type        = list(string)
-  default     = ["10.0.0.0/8"]
+  default     = ["0.0.0.0/32"]
 }
 
 variable "private_zone_name" {

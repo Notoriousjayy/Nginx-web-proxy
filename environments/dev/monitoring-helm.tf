@@ -116,6 +116,9 @@ resource "kubernetes_ingress_v1" "prometheus_internal" {
       "alb.ingress.kubernetes.io/target-type"     = "ip"
       "alb.ingress.kubernetes.io/listen-ports"    = "[{\"HTTP\":80}]"
       "alb.ingress.kubernetes.io/security-groups" = aws_security_group.prometheus_internal_alb.id
+
+      "alb.ingress.kubernetes.io/healthcheck-port" = "traffic-port"
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/-/healthy"
     }
   }
 
@@ -128,7 +131,7 @@ resource "kubernetes_ingress_v1" "prometheus_internal" {
           backend {
             service {
               name = "kube-prometheus-stack-prometheus"
-              port { number = 80 }
+              port { number = 9090 }
             }
           }
         }
