@@ -18,26 +18,19 @@ resource "helm_release" "kube_prometheus_stack" {
   namespace        = kubernetes_namespace.monitoring.metadata[0].name
   create_namespace = false
 
-  # ← ensure AWS LB Controller is ready before deploying Prometheus
+  # ensure AWS LB Controller is ready before deploying Prometheus
   depends_on = [
     helm_release.aws_load_balancer_controller
   ]
 
-  values = [yamlencode({
-    grafana = {
-      ingress = { enabled = false }
-      service = { type = "ClusterIP" }
-    }
-    prometheus = {
-      ingress = { enabled = false }
-      service = { type = "ClusterIP" }
-    }
-    alertmanager = {
-      ingress = { enabled = false }
-      service = { type = "ClusterIP" }
-    }
-  })]
+    values = [
+    templatefile("${path.module}/prometheus-values.yaml", {
+      grafana_admin_password = var.grafana_admin_password
+    })
+  ]
+
 }
+
 
 ############################################
 # 3. Security Group for Prometheus ALB (public)
