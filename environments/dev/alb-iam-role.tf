@@ -1,45 +1,47 @@
-# Download the AWS Load Balancer Controller IAM policy
+############################################
+# AWS LB Controller IAM Role & Policy
+############################################
+
+# (1) Download the IAM policy document
 data "http" "lbc_policy" {
   url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.13.3/docs/install/iam_policy.json"
 }
 
-# Create a managed policy from that document
+# (2) Create a managed policy
 resource "aws_iam_policy" "lbc" {
   name   = "AWSLoadBalancerControllerIAMPolicy-${var.eks_cluster_name}"
   policy = data.http.lbc_policy.response_body
 }
 
-# Look up our cluster’s OIDC provider (requires enable_irsa = true)
+# (3) Lookup EKS OIDC provider (IRSA)
 data "aws_iam_openid_connect_provider" "eks" {
   arn = module.eks.oidc_provider_arn
 }
 
-# Build the assume-role policy so the controller’s SA can assume it
+# (4) Build the assume-role policy
 data "aws_iam_policy_document" "lbc_assume" {
   statement {
     effect    = "Allow"
     actions   = ["sts:AssumeRoleWithWebIdentity"]
-
     principals {
       type        = "Federated"
       identifiers = [data.aws_iam_openid_connect_provider.eks.arn]
     }
-
     condition {
       test     = "StringEquals"
-      variable = "${replace(data.aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
+      variable = "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
     }
   }
 }
 
-# Create the IAM role for the controller
+# (5) Create the IAM Role for the controller
 resource "aws_iam_role" "lbc" {
-  name               = "eks-lbc-${var.eks_cluster_name}"
+  name               = "${var.eks_cluster_name}-aws-lb-controller"
   assume_role_policy = data.aws_iam_policy_document.lbc_assume.json
 }
 
-# Attach the managed policy to that role
+# (6) Attach the managed policy
 resource "aws_iam_role_policy_attachment" "lbc" {
   role       = aws_iam_role.lbc.name
   policy_arn = aws_iam_policy.lbc.arn

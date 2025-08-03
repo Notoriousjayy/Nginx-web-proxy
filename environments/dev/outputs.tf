@@ -18,3 +18,8 @@ output "cluster_id" {
   # point at the cluster_name output (never null)
   value       = module.eks.cluster_name
 }
+
+output "node_security_group_id" {
+  description = "Security group ID attached to EKS worker nodes"
+  value       = module.eks.node_security_group_id
+}

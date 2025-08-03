@@ -48,7 +48,6 @@ variable "tags" {
   default     = {}
 }
 
-
 variable "name" {
   description = "Name tag prefix for all VPC resources"
   type        = string
@@ -60,6 +59,43 @@ variable "grafana_admin_password" {
 }
 
 variable "zone_name" {
-  description = "Base DNS zone (e.g. example.com) – used for ALB host rules"
+  description = "Public Route53 base DNS zone (e.g. example.com)"
+  type        = string
+}
+
+variable "app_image_repository" {
+  description = "Docker repo for the React app"
+  type        = string
+}
+
+variable "app_image_tag" {
+  description = "Docker image tag for the React app"
+  type        = string
+}
+
+variable "app_ingress_host" {
+  description = "Hostname to expose the React app"
+  type        = string
+}
+
+# === New variables for Option A ===
+variable "grafana_domain" {
+  description = "Public FQDN for Grafana (e.g. grafana.example.com) inside the public hosted zone."
+  type        = string
+}
+
+variable "prometheus_domain" {
+  description = "Private FQDN for Prometheus (e.g. prometheus.internal.example.com) in a private hosted zone."
+  type        = string
+}
+
+variable "prometheus_allowed_cidrs" {
+  description = "CIDRs allowed to reach the public Prometheus ALB (HTTP 80)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "private_zone_name" {
+  description = "Private Route53 hosted zone name (e.g. internal.example.com)"
   type        = string
 }

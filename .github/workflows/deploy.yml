@@ -1,43 +1,120 @@
-name: Build & Deploy to S3
+name: Deploy to EKS from ECR (Vault)
 
 on:
   push:
     branches: [ main ]
 
+permissions:
+  id-token: write   # required for Vault JWT/OIDC
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  # Vault address can be non-secret; the rest are pulled from Vault
+  VAULT_ADDR: ${{ vars.VAULT_ADDR }}
+
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      # 1) Log into Vault via GitHub OIDC and fetch deploy config
+      - name: Read deploy config from Vault (KV)
+        id: vault-kv
+        uses: hashicorp/vault-action@v2
         with:
-          node-version: 18
+          url: ${{ env.VAULT_ADDR }}
+          method: jwt
+          role: ${{ secrets.VAULT_GITHUB_ROLE }}     # e.g., "gha-deployer"
+          exportToken: true
+          # Adjust KV path/keys to your setup (KV v2 example)
+          secrets: |
+            kv/data/deploy EKS_CLUSTER_NAME | EKS_CLUSTER_NAME ;
+            kv/data/deploy AWS_REGION       | AWS_REGION ;
+            kv/data/deploy K8S_NAMESPACE    | K8S_NAMESPACE | default ;
+            kv/data/deploy ECR_REPOSITORY   | ECR_REPOSITORY ;
+            kv/data/deploy IMAGE_TAG        | IMAGE_TAG |   # optional; leave blank to auto-detect latest
 
-      - name: Install & Build
-        working-directory: app
-        run: |
-          npm ci
-          npm run build
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      # 2) Ask Vault for short-lived AWS credentials (AWS secrets engine role with ECR perms)
+      - name: Get temporary AWS creds from Vault (AWS engine)
+        id: vault-aws
+        uses: hashicorp/vault-action@v2
         with:
-          aws-region: us-east-2
-          role-to-assume: arn:aws:iam::866934333672:role/YourDeployRole
+          url: ${{ env.VAULT_ADDR }}
+          method: jwt
+          role: ${{ secrets.VAULT_GITHUB_ROLE }}
+          exportEnv: true
+          secrets: |
+            aws/creds/ecr-ro access_key    | AWS_ACCESS_KEY_ID ;
+            aws/creds/ecr-ro secret_key    | AWS_SECRET_ACCESS_KEY ;
+            aws/creds/ecr-ro security_token| AWS_SESSION_TOKEN
 
-      - name: Sync to S3
+      - name: Compute registry/account and kubeconfig
+        shell: bash
         run: |
-          BUCKET=$(terraform -chdir=environments/dev output -raw assets_bucket_name)
-          aws s3 sync app/dist/ s3://$BUCKET/ \
-            --delete \
-            --acl bucket-owner-full-control
+          set -euo pipefail
+          echo "AWS_REGION=${AWS_REGION:-us-east-1}" >> $GITHUB_ENV
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
+          echo "ECR_REGISTRY=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com" >> $GITHUB_ENV
+          kubectl version --client
+          aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_REGION"
 
-      - name: Invalidate CloudFront (optional)
+      - name: Determine image tag (latest if not provided)
+        shell: bash
         run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DIST_ID }} \
-            --paths "/*"
+          set -euo pipefail
+          if [[ -n "${IMAGE_TAG:-}" && "${IMAGE_TAG}" != "null" ]]; then
+            echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+          else
+            TAG=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY" \
+              --query 'reverse(sort_by(imageDetails,& imagePushedAt))[0].imageTags[0]' --output text)
+            echo "IMAGE_TAG=${TAG}" >> $GITHUB_ENV
+          fi
+          echo "Using $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}"
+
+      # 3) Create/refresh the pull secret that your chart expects: ecr-regcred
+      - name: Ensure ECR image pull secret exists (ecr-regcred)
+        shell: bash
+        run: |
+          set -euo pipefail
+          NS="${K8S_NAMESPACE:-default}"
+          aws ecr get-login-password --region "$AWS_REGION" \
+            | kubectl create secret docker-registry ecr-regcred \
+                --namespace "$NS" \
+                --docker-server="$ECR_REGISTRY" \
+                --docker-username=AWS \
+                --docker-password-stdin \
+                --dry-run=client -o yaml \
+            | kubectl apply -f -
+
+      # 4) Helm upgrade/install pointing at the ECR image
+      - name: Deploy with Helm
+        shell: bash
+        run: |
+          set -euo pipefail
+          NS="${K8S_NAMESPACE:-default}"
+          helm upgrade --install react-app ./chart \
+            --namespace "$NS" \
+            --create-namespace=false \
+            --set image.repository="${ECR_REGISTRY}/${ECR_REPOSITORY}" \
+            --set image.tag="${IMAGE_TAG}"
+
+      # 5) Wait for rollout (Deployment name derived from helpers)
+      - name: Wait for rollout
+        shell: bash
+        run: |
+          NS="${K8S_NAMESPACE:-default}"
+          kubectl rollout status deploy/react-app-react-app -n "$NS" --timeout=5m

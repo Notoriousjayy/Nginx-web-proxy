@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    # (existing role mappings…)
+  mapUsers: |
+    - userarn: arn:aws:iam::866934333672:user/jorda-suber
+      username: jorda-suber
+      groups:
+        - system:masters

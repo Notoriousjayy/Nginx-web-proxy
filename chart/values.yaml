@@ -1,40 +1,32 @@
-# values.yaml — drop-in replacement
-
-# Whether to create the namespace or rely on --namespace
+# ─────────────── Deployment & metadata ───────────────
 createNamespace: false
 namespace: default
-
 appName: react-app
 serviceName: react-app
-
 replicaCount: 3
 revisionHistoryLimit: 2
 
+# ─────────────── Autoscaling (off) ───────────────
 autoscaling:
   enabled: false
   minReplicas: 2
   maxReplicas: 5
   targetCPUUtilizationPercentage: 80
 
-# If your ECR repo is private, make sure you have:
-# kubectl create secret generic ecr-regcred \
-#   --type=kubernetes.io/dockerconfigjson \
-#   --from-file=.dockerconfigjson=/path/to/.docker/config.json
+# ─────────────── Image & pull secret ───────────────
 imagePullSecrets:
   - name: ecr-regcred
-
 image:
   repository: 866934333672.dkr.ecr.us-east-1.amazonaws.com/jordansuber/react-app
   tag: "0.0.3"
   pullPolicy: IfNotPresent
 
+# ─────────────── Service (Cluster-internal) ───────────────
 service:
-  type: NodePort
+  type: ClusterIP
   port: 8080
   targetPort: 8080
-  externalTrafficPolicy: Cluster
   sessionAffinity: None
-  loadBalancerSourceRanges: []
   annotations: {}
   ports:
     - name: http
@@ -42,46 +34,38 @@ service:
       port: 8080
       targetPort: 8080
 
-# Optional ConfigMap mount
-configMap:
-  enabled: false
-  name: ""
-  mountPath: "/etc/config"
-
-# Optional Secret mount
-secret:
-  enabled: false
-  name: ""
-  mountPath: "/etc/secret"
-
-nodeSelector: {}
-tolerations: []
-affinity: {}
-
-readinessProbe:
-  httpGet:
-    path: /
-    port: 8080
-  initialDelaySeconds: 5
-  periodSeconds: 10
-
-livenessProbe:
-  httpGet:
-    path: /
-    port: 8080
-  initialDelaySeconds: 30
-  periodSeconds: 30
-
+# ─────────────── Ingress (shares the monitoring ALB) ───────────────
 ingress:
   enabled: true
   ingressClassName: alb
   annotations:
-    kubernetes.io/ingress.class: "alb"
-    alb.ingress.kubernetes.io/scheme: "internet-facing"
-    alb.ingress.kubernetes.io/target-type: "ip"
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/group.name: monitoring
+    alb.ingress.kubernetes.io/group.order: "99"          # lowered priority
   hosts:
     paths:
       - path: /
-        pathType: Prefix
+        pathType: Prefix                                    # exact "/" only
   tls: []
+
+# ─────────────── Probes ───────────────
+readinessProbe:
+  httpGet: { path: /, port: 8080 }
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+livenessProbe:
+  httpGet: { path: /, port: 8080 }
+  initialDelaySeconds: 30
+  periodSeconds: 30
+
+# ─────────────── (optional) Config & Secret mounts ───────────────
+configMap: { enabled: false }
+secret:    { enabled: false }
+
+nodeSelector: {}
+tolerations: []
+affinity:   {}
