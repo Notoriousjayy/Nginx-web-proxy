@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Vault address can be non-secret; the rest are pulled from Vault
   VAULT_ADDR: ${{ vars.VAULT_ADDR }}
 
 jobs:
@@ -24,30 +23,54 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
+      # ─────────────────────────────────────────────────────────────────────────
+      # Install kubectl (latest stable)
+      # ─────────────────────────────────────────────────────────────────────────
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
 
-      # 1) Log into Vault via GitHub OIDC and fetch deploy config
+      # ─────────────────────────────────────────────────────────────────────────
+      # Install Helm (latest stable)
+      # ─────────────────────────────────────────────────────────────────────────
+      - name: Install Helm
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/helm/helm/releases/latest \
+            | grep '"tag_name":' | head -1 | cut -d '"' -f4)
+          curl -LO "https://get.helm.sh/helm-${VERSION}-linux-amd64.tar.gz"
+          tar -zxvf helm-${VERSION}-linux-amd64.tar.gz
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+          helm version
+
+      # ─────────────────────────────────────────────────────────────────────────
+      # 1) Read deploy config from Vault (KV)
+      # ─────────────────────────────────────────────────────────────────────────
       - name: Read deploy config from Vault (KV)
         id: vault-kv
         uses: hashicorp/vault-action@v2
         with:
           url: ${{ env.VAULT_ADDR }}
           method: jwt
-          role: ${{ secrets.VAULT_GITHUB_ROLE }}     # e.g., "gha-deployer"
+          role: ${{ secrets.VAULT_GITHUB_ROLE }}
           exportToken: true
-          # Adjust KV path/keys to your setup (KV v2 example)
           secrets: |
             kv/data/deploy EKS_CLUSTER_NAME | EKS_CLUSTER_NAME ;
             kv/data/deploy AWS_REGION       | AWS_REGION ;
             kv/data/deploy K8S_NAMESPACE    | K8S_NAMESPACE | default ;
             kv/data/deploy ECR_REPOSITORY   | ECR_REPOSITORY ;
-            kv/data/deploy IMAGE_TAG        | IMAGE_TAG |   # optional; leave blank to auto-detect latest
+            kv/data/deploy IMAGE_TAG        | IMAGE_TAG |
 
-      # 2) Ask Vault for short-lived AWS credentials (AWS secrets engine role with ECR perms)
+      # ─────────────────────────────────────────────────────────────────────────
+      # 2) Get temporary AWS creds from Vault (AWS Engine)
+      # ─────────────────────────────────────────────────────────────────────────
       - name: Get temporary AWS creds from Vault (AWS engine)
         id: vault-aws
         uses: hashicorp/vault-action@v2
@@ -61,7 +84,10 @@ jobs:
             aws/creds/ecr-ro secret_key    | AWS_SECRET_ACCESS_KEY ;
             aws/creds/ecr-ro security_token| AWS_SESSION_TOKEN
 
-      - name: Compute registry/account and kubeconfig
+      # ─────────────────────────────────────────────────────────────────────────
+      # Compute registry/account, update kubeconfig
+      # ─────────────────────────────────────────────────────────────────────────
+      - name: Configure AWS & kubeconfig
         shell: bash
         run: |
           set -euo pipefail
@@ -69,10 +95,12 @@ jobs:
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
           echo "ECR_REGISTRY=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com" >> $GITHUB_ENV
-          kubectl version --client
           aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_REGION"
 
-      - name: Determine image tag (latest if not provided)
+      # ─────────────────────────────────────────────────────────────────────────
+      # Determine image tag (latest if not provided)
+      # ─────────────────────────────────────────────────────────────────────────
+      - name: Determine image tag
         shell: bash
         run: |
           set -euo pipefail
@@ -85,9 +113,10 @@ jobs:
           fi
           echo "Using $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}"
 
-      # 3) Create/refresh the pull secret that your chart expects: ecr-regcred
-      - name: Ensure ECR image pull secret exists (ecr-regcred)
-        shell: bash
+      # ─────────────────────────────────────────────────────────────────────────
+      # Ensure ECR image-pull secret
+      # ─────────────────────────────────────────────────────────────────────────
+      - name: Ensure ECR pull secret (ecr-regcred)
         run: |
           set -euo pipefail
           NS="${K8S_NAMESPACE:-default}"
@@ -100,9 +129,10 @@ jobs:
                 --dry-run=client -o yaml \
             | kubectl apply -f -
 
-      # 4) Helm upgrade/install pointing at the ECR image
+      # ─────────────────────────────────────────────────────────────────────────
+      # Helm upgrade/install
+      # ─────────────────────────────────────────────────────────────────────────
       - name: Deploy with Helm
-        shell: bash
         run: |
           set -euo pipefail
           NS="${K8S_NAMESPACE:-default}"
@@ -112,9 +142,10 @@ jobs:
             --set image.repository="${ECR_REGISTRY}/${ECR_REPOSITORY}" \
             --set image.tag="${IMAGE_TAG}"
 
-      # 5) Wait for rollout (Deployment name derived from helpers)
+      # ─────────────────────────────────────────────────────────────────────────
+      # Wait for rollout
+      # ─────────────────────────────────────────────────────────────────────────
       - name: Wait for rollout
-        shell: bash
         run: |
           NS="${K8S_NAMESPACE:-default}"
           kubectl rollout status deploy/react-app-react-app -n "$NS" --timeout=5m
